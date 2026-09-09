@@ -66,6 +66,7 @@ type Row = [
   string,
   string,
   string,
+  string,
 ];
 
 const rows: Row[] = [
