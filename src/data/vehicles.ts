@@ -24,7 +24,7 @@ export type Vehicle = {
   engine: string;
   color: string;
   location: string;
-  doors?: number;
+  doors?: number | undefined;
   images: string[];
   highlights: string[];
   featured: boolean;
