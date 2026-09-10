@@ -1,5 +1,7 @@
 import { Link } from "@tanstack/react-router";
+import { Facebook, Instagram } from "lucide-react";
 import { Wordmark } from "@/components/Wordmark";
+import { NewsletterForm } from "@/components/NewsletterForm";
 import { WHATSAPP_DISPLAY, whatsappUrl } from "@/lib/whatsapp";
 
 export function Footer() {
@@ -11,6 +13,26 @@ export function Footer() {
           <p className="mt-6 max-w-xs text-sm text-primary-foreground/70">
             Compra y venta de vehículos usados con verificación real, gestoría automotor y seguros.
           </p>
+          <div className="mt-6 flex gap-3">
+            <a
+              href="https://instagram.com"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Instagram"
+              className="border border-primary-foreground/25 p-3 transition hover:border-camel hover:text-camel"
+            >
+              <Instagram className="h-4 w-4" />
+            </a>
+            <a
+              href="https://facebook.com"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Facebook"
+              className="border border-primary-foreground/25 p-3 transition hover:border-camel hover:text-camel"
+            >
+              <Facebook className="h-4 w-4" />
+            </a>
+          </div>
         </div>
 
         <div>
@@ -35,12 +57,12 @@ export function Footer() {
         </div>
 
         <div>
-          <p className="eyebrow text-camel">Categorías</p>
+          <p className="eyebrow text-camel">Zonas de cobertura</p>
           <ul className="mt-5 space-y-3 text-sm text-primary-foreground/80">
-            <li>Autos</li>
-            <li>Motos</li>
-            <li>Cuatriciclos</li>
-            <li>Lanchas</li>
+            <li>Pilar</li>
+            <li>El Talar / Tigre</li>
+            <li>Pacheco</li>
+            <li>Malvinas Argentinas</li>
           </ul>
         </div>
 
@@ -57,9 +79,9 @@ export function Footer() {
                 {WHATSAPP_DISPLAY}
               </a>
             </li>
-            <li>San Martín, Buenos Aires</li>
             <li>Lunes a sábado, 9 a 19 h</li>
           </ul>
+          <NewsletterForm />
         </div>
       </div>
 
