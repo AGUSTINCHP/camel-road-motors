@@ -2,6 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, BadgeCheck, FileText, ShieldCheck } from "lucide-react";
 import heroImg from "@/assets/hero.jpg";
 import { VehicleCard } from "@/components/VehicleCard";
+import { BrandsGrid } from "@/components/BrandsGrid";
+import { Testimonials } from "@/components/Testimonials";
+import { CoverageZones } from "@/components/CoverageZones";
+import { TradeInForm } from "@/components/TradeInForm";
 import { featuredVehicles, newestVehicles } from "@/data/vehicles";
 
 export const Route = createFileRoute("/")({
@@ -118,6 +122,14 @@ function Home() {
           ))}
         </div>
       </Section>
+
+      <BrandsGrid />
+
+      <Testimonials />
+
+      <CoverageZones />
+
+      <TradeInForm />
 
       <section className="mx-auto max-w-6xl px-5 py-20 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-2 lg:items-center">

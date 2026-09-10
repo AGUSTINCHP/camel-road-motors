@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { Check, Scale } from "lucide-react";
+import { Check, Heart } from "lucide-react";
 import { FinanceSimulator } from "@/components/FinanceSimulator";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { NotifyForm } from "@/components/NotifyForm";
@@ -151,6 +151,7 @@ function VehicleDetail() {
               className="w-full"
               context={{
                 title: `${vehicle.brand} ${vehicle.model} ${vehicle.year}`,
+                vehicle: `${vehicle.brand} ${vehicle.model} ${vehicle.version} ${vehicle.year}`,
                 subject: `Me interesa el ${vehicle.brand} ${vehicle.model} ${vehicle.version} ${vehicle.year} (${formatKm(
                   vehicle.km,
                 )}) publicado en ${formatPrice(vehicle.price)}.`,
@@ -164,8 +165,8 @@ function VehicleDetail() {
                 selected && "border-camel bg-camel text-accent-foreground",
               )}
             >
-              <Scale className="h-4 w-4" />
-              {selected ? "En el comparador" : "Comparar (hasta 3)"}
+              <Heart className={cn("h-4 w-4", selected && "fill-current")} />
+              {selected ? "Guardado para comparar" : "Guardar y comparar (hasta 3)"}
             </button>
           </div>
 

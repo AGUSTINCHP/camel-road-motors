@@ -1,12 +1,25 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { SlidersHorizontal, X } from "lucide-react";
 import { FilterPanel, type Filters } from "@/components/FilterPanel";
 import { VehicleCard } from "@/components/VehicleCard";
 import { NotifyForm } from "@/components/NotifyForm";
-import { kmRange, priceRange, vehicles, yearRange } from "@/data/vehicles";
+import { kmRange, priceRange, vehicles, yearRange, type VehicleType } from "@/data/vehicles";
+
+type CatalogSearch = { marca?: string; tipo?: VehicleType };
+
+const VALID_TYPES: VehicleType[] = ["auto", "moto", "cuatriciclo", "lancha"];
 
 export const Route = createFileRoute("/catalogo/")({
+  validateSearch: (search: Record<string, unknown>): CatalogSearch => {
+    const marca = typeof search["marca"] === "string" ? search["marca"] : undefined;
+    const tipoRaw = typeof search["tipo"] === "string" ? (search["tipo"] as VehicleType) : undefined;
+    const tipo = tipoRaw && VALID_TYPES.includes(tipoRaw) ? tipoRaw : undefined;
+    return {
+      ...(marca ? { marca } : {}),
+      ...(tipo ? { tipo } : {}),
+    };
+  },
   head: () => ({
     meta: [
       { title: "Catálogo de usados | Suzuki Motors" },
@@ -28,7 +41,7 @@ export const Route = createFileRoute("/catalogo/")({
   component: Catalogo,
 });
 
-const initialFilters: Filters = {
+const baseFilters: Filters = {
   type: "todos",
   brand: "",
   model: "",
@@ -38,23 +51,31 @@ const initialFilters: Filters = {
 };
 
 function Catalogo() {
-  const [filters, setFilters] = useState<Filters>(initialFilters);
+  const search = Route.useSearch();
+  const [filters, setFilters] = useState<Filters>({
+    ...baseFilters,
+    type: search.tipo ?? "todos",
+    brand: search.marca ?? "",
+  });
   const [drawer, setDrawer] = useState(false);
+
+  useEffect(() => {
+    setFilters((f) => ({ ...f, type: search.tipo ?? "todos", brand: search.marca ?? "" }));
+  }, [search.tipo, search.marca]);
 
   const byType = useMemo(
     () => vehicles.filter((v) => filters.type === "todos" || v.type === filters.type),
     [filters.type],
   );
 
-  const brands = useMemo(
-    () => Array.from(new Set(byType.map((v) => v.brand))).sort(),
-    [byType],
-  );
+  const brands = useMemo(() => Array.from(new Set(byType.map((v) => v.brand))).sort(), [byType]);
 
   const models = useMemo(
     () =>
       Array.from(
-        new Set(byType.filter((v) => !filters.brand || v.brand === filters.brand).map((v) => v.model)),
+        new Set(
+          byType.filter((v) => !filters.brand || v.brand === filters.brand).map((v) => v.model),
+        ),
       ).sort(),
     [byType, filters.brand],
   );
@@ -79,7 +100,7 @@ function Catalogo() {
       brands={brands}
       models={models}
       bounds={{ price: priceRange, km: kmRange, year: yearRange }}
-      onReset={() => setFilters(initialFilters)}
+      onReset={() => setFilters(baseFilters)}
     />
   );
 
