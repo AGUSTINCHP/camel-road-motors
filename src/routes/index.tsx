@@ -6,9 +6,17 @@ import { BrandsGrid } from "@/components/BrandsGrid";
 import { Testimonials } from "@/components/Testimonials";
 import { CoverageZones } from "@/components/CoverageZones";
 import { TradeInForm } from "@/components/TradeInForm";
-import { featuredVehicles, newestVehicles } from "@/data/vehicles";
+import { fetchPublishedVehicles } from "@/lib/vehicles.server";
 
 export const Route = createFileRoute("/")({
+  loader: async () => {
+    const vehicles = await fetchPublishedVehicles();
+    const featuredVehicles = vehicles.filter((v) => v.featured).slice(0, 6);
+    const newestVehicles = [...vehicles]
+      .sort((a, b) => a.addedDaysAgo - b.addedDaysAgo)
+      .slice(0, 4);
+    return { vehicles, featuredVehicles, newestVehicles };
+  },
   head: () => ({
     meta: [
       { title: "Suzuki Motors | Usados verificados, gestoría y seguros" },
@@ -52,6 +60,7 @@ const pillars = [
 ];
 
 function Home() {
+  const { vehicles, featuredVehicles, newestVehicles } = Route.useLoaderData();
   return (
     <>
       <section className="relative flex min-h-[86vh] items-end overflow-hidden">
@@ -123,7 +132,7 @@ function Home() {
         </div>
       </Section>
 
-      <BrandsGrid />
+      <BrandsGrid vehicles={vehicles} />
 
       <Testimonials />
 

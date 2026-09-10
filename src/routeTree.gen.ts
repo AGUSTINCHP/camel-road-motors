@@ -12,8 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GestoriaRouteImport } from './routes/gestoria'
 import { Route as SegurosRouteImport } from './routes/seguros'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as CatalogoIndexRouteImport } from './routes/catalogo.index'
 import { Route as CatalogoSlugRouteImport } from './routes/catalogo.$slug'
+import { Route as AdminVehiculosIdRouteImport } from './routes/admin/vehiculos.$id'
+import { Route as AdminVehiculosNuevoRouteImport } from './routes/admin/vehiculos.nuevo'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -30,6 +34,16 @@ const SegurosRoute = SegurosRouteImport.update({
   path: '/seguros',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/admin/login',
+  path: '/admin/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CatalogoIndexRoute = CatalogoIndexRouteImport.update({
   id: '/catalogo/',
   path: '/catalogo/',
@@ -40,49 +54,97 @@ const CatalogoSlugRoute = CatalogoSlugRouteImport.update({
   path: '/catalogo/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminVehiculosIdRoute = AdminVehiculosIdRouteImport.update({
+  id: '/admin/vehiculos/$id',
+  path: '/admin/vehiculos/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminVehiculosNuevoRoute = AdminVehiculosNuevoRouteImport.update({
+  id: '/admin/vehiculos/nuevo',
+  path: '/admin/vehiculos/nuevo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/gestoria': typeof GestoriaRoute
   '/seguros': typeof SegurosRoute
+  '/admin/login': typeof AdminLoginRoute
   '/catalogo/$slug': typeof CatalogoSlugRoute
+  '/admin/': typeof AdminIndexRoute
   '/catalogo/': typeof CatalogoIndexRoute
+  '/admin/vehiculos/$id': typeof AdminVehiculosIdRoute
+  '/admin/vehiculos/nuevo': typeof AdminVehiculosNuevoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/gestoria': typeof GestoriaRoute
   '/seguros': typeof SegurosRoute
+  '/admin/login': typeof AdminLoginRoute
   '/catalogo/$slug': typeof CatalogoSlugRoute
+  '/admin': typeof AdminIndexRoute
   '/catalogo': typeof CatalogoIndexRoute
+  '/admin/vehiculos/$id': typeof AdminVehiculosIdRoute
+  '/admin/vehiculos/nuevo': typeof AdminVehiculosNuevoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/gestoria': typeof GestoriaRoute
   '/seguros': typeof SegurosRoute
+  '/admin/login': typeof AdminLoginRoute
   '/catalogo/$slug': typeof CatalogoSlugRoute
+  '/admin/': typeof AdminIndexRoute
   '/catalogo/': typeof CatalogoIndexRoute
+  '/admin/vehiculos/$id': typeof AdminVehiculosIdRoute
+  '/admin/vehiculos/nuevo': typeof AdminVehiculosNuevoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/gestoria' | '/seguros' | '/catalogo/$slug' | '/catalogo/'
+  fullPaths:
+    | '/'
+    | '/gestoria'
+    | '/seguros'
+    | '/admin/login'
+    | '/catalogo/$slug'
+    | '/admin/'
+    | '/catalogo/'
+    | '/admin/vehiculos/$id'
+    | '/admin/vehiculos/nuevo'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/gestoria' | '/seguros' | '/catalogo/$slug' | '/catalogo'
+  to:
+    | '/'
+    | '/gestoria'
+    | '/seguros'
+    | '/admin/login'
+    | '/catalogo/$slug'
+    | '/admin'
+    | '/catalogo'
+    | '/admin/vehiculos/$id'
+    | '/admin/vehiculos/nuevo'
   id:
     | '__root__'
     | '/'
     | '/gestoria'
     | '/seguros'
+    | '/admin/login'
     | '/catalogo/$slug'
+    | '/admin/'
     | '/catalogo/'
+    | '/admin/vehiculos/$id'
+    | '/admin/vehiculos/nuevo'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   GestoriaRoute: typeof GestoriaRoute
   SegurosRoute: typeof SegurosRoute
+  AdminLoginRoute: typeof AdminLoginRoute
   CatalogoSlugRoute: typeof CatalogoSlugRoute
+  AdminIndexRoute: typeof AdminIndexRoute
   CatalogoIndexRoute: typeof CatalogoIndexRoute
+  AdminVehiculosIdRoute: typeof AdminVehiculosIdRoute
+  AdminVehiculosNuevoRoute: typeof AdminVehiculosNuevoRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -108,6 +170,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SegurosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/admin/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/catalogo/': {
       id: '/catalogo/'
       path: '/catalogo'
@@ -122,6 +198,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CatalogoSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/vehiculos/$id': {
+      id: '/admin/vehiculos/$id'
+      path: '/admin/vehiculos/$id'
+      fullPath: '/admin/vehiculos/$id'
+      preLoaderRoute: typeof AdminVehiculosIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/vehiculos/nuevo': {
+      id: '/admin/vehiculos/nuevo'
+      path: '/admin/vehiculos/nuevo'
+      fullPath: '/admin/vehiculos/nuevo'
+      preLoaderRoute: typeof AdminVehiculosNuevoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -129,8 +219,12 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   GestoriaRoute: GestoriaRoute,
   SegurosRoute: SegurosRoute,
+  AdminLoginRoute: AdminLoginRoute,
   CatalogoSlugRoute: CatalogoSlugRoute,
+  AdminIndexRoute: AdminIndexRoute,
   CatalogoIndexRoute: CatalogoIndexRoute,
+  AdminVehiculosIdRoute: AdminVehiculosIdRoute,
+  AdminVehiculosNuevoRoute: AdminVehiculosNuevoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

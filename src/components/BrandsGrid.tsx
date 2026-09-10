@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { vehicles } from "@/data/vehicles";
+import type { Vehicle } from "@/data/vehicles";
 
 const featuredBrands = [
   "Toyota",
@@ -16,7 +16,7 @@ const featuredBrands = [
   "Can-Am",
 ];
 
-export function BrandsGrid() {
+export function BrandsGrid({ vehicles }: { vehicles: Vehicle[] }) {
   const counts = vehicles.reduce<Record<string, number>>((acc, v) => {
     acc[v.brand] = (acc[v.brand] ?? 0) + 1;
     return acc;

@@ -4,7 +4,8 @@ import { SlidersHorizontal, X } from "lucide-react";
 import { FilterPanel, type Filters } from "@/components/FilterPanel";
 import { VehicleCard } from "@/components/VehicleCard";
 import { NotifyForm } from "@/components/NotifyForm";
-import { kmRange, priceRange, vehicles, yearRange, type VehicleType } from "@/data/vehicles";
+import { type VehicleType } from "@/data/vehicles";
+import { fetchPublishedVehicles } from "@/lib/vehicles.server";
 
 type CatalogSearch = { marca?: string; tipo?: VehicleType };
 
@@ -19,6 +20,19 @@ export const Route = createFileRoute("/catalogo/")({
       ...(marca ? { marca } : {}),
       ...(tipo ? { tipo } : {}),
     };
+  },
+  loader: async () => {
+    const vehicles = await fetchPublishedVehicles();
+    const priceRange: [number, number] =
+      vehicles.length > 0
+        ? [Math.min(...vehicles.map((v) => v.price)), Math.max(...vehicles.map((v) => v.price))]
+        : [0, 0];
+    const kmRange: [number, number] = [0, Math.max(0, ...vehicles.map((v) => v.km))];
+    const yearRange: [number, number] =
+      vehicles.length > 0
+        ? [Math.min(...vehicles.map((v) => v.year)), Math.max(...vehicles.map((v) => v.year))]
+        : [2000, new Date().getFullYear()];
+    return { vehicles, priceRange, kmRange, yearRange };
   },
   head: () => ({
     meta: [
@@ -41,17 +55,17 @@ export const Route = createFileRoute("/catalogo/")({
   component: Catalogo,
 });
 
-const baseFilters: Filters = {
-  type: "todos",
-  brand: "",
-  model: "",
-  maxPrice: priceRange[1],
-  maxKm: kmRange[1],
-  minYear: yearRange[0],
-};
-
 function Catalogo() {
+  const { vehicles, priceRange, kmRange, yearRange } = Route.useLoaderData();
   const search = Route.useSearch();
+  const baseFilters: Filters = {
+    type: "todos",
+    brand: "",
+    model: "",
+    maxPrice: priceRange[1],
+    maxKm: kmRange[1],
+    minYear: yearRange[0],
+  };
   const [filters, setFilters] = useState<Filters>({
     ...baseFilters,
     type: search.tipo ?? "todos",
@@ -65,7 +79,7 @@ function Catalogo() {
 
   const byType = useMemo(
     () => vehicles.filter((v) => filters.type === "todos" || v.type === filters.type),
-    [filters.type],
+    [vehicles, filters.type],
   );
 
   const brands = useMemo(() => Array.from(new Set(byType.map((v) => v.brand))).sort(), [byType]);

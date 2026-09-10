@@ -1,15 +1,23 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { getVehicleById } from "@/data/vehicles";
+import { useQuery } from "@tanstack/react-query";
+import { fetchVehiclesByIds } from "@/lib/vehicles.server";
 import { formatKm, formatPrice } from "@/lib/format";
 import { useCompare } from "@/lib/compare";
 
 export function CompareBar() {
   const compare = useCompare();
   const [open, setOpen] = useState(false);
-  const items = compare.selected.map((id) => getVehicleById(id)).filter(Boolean);
+  const ids = compare.selected;
 
-  if (items.length === 0) return null;
+  const { data } = useQuery({
+    queryKey: ["compare-vehicles", ids],
+    queryFn: () => fetchVehiclesByIds({ data: ids }),
+    enabled: ids.length > 0,
+  });
+  const items = data ?? [];
+
+  if (ids.length === 0) return null;
 
   return (
     <>
@@ -18,7 +26,8 @@ export function CompareBar() {
           <p className="min-w-0 truncate text-sm">
             <span className="eyebrow text-camel">Comparador</span>{" "}
             <span className="text-muted-foreground">
-              {items.length} de 3 · {items.map((v) => `${v!.brand} ${v!.model}`).join(" / ")}
+              {ids.length} de 3
+              {items.length > 0 ? ` · ${items.map((v) => `${v.brand} ${v.model}`).join(" / ")}` : ""}
             </span>
           </p>
           <div className="flex shrink-0 items-center gap-2">
@@ -57,26 +66,26 @@ export function CompareBar() {
 
             <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {items.map((v) => (
-                <div key={v!.id} className="border border-border">
+                <div key={v.id} className="border border-border">
                   <img
-                    src={v!.images[0]}
-                    alt={`${v!.brand} ${v!.model}`}
+                    src={v.images[0]}
+                    alt={`${v.brand} ${v.model}`}
                     loading="lazy"
                     className="aspect-[4/3] w-full object-cover"
                   />
                   <div className="space-y-3 p-4 text-sm">
                     <p className="font-display text-lg">
-                      {v!.brand} {v!.model}
+                      {v.brand} {v.model}
                     </p>
-                    <Row label="Precio" value={formatPrice(v!.price)} />
-                    <Row label="Año" value={String(v!.year)} />
-                    <Row label="Kilómetros" value={formatKm(v!.km)} />
-                    <Row label="Motor" value={v!.engine} />
-                    <Row label="Transmisión" value={v!.transmission} />
-                    <Row label="Combustible" value={v!.fuel} />
+                    <Row label="Precio" value={formatPrice(v.price)} />
+                    <Row label="Año" value={String(v.year)} />
+                    <Row label="Kilómetros" value={formatKm(v.km)} />
+                    <Row label="Motor" value={v.engine} />
+                    <Row label="Transmisión" value={v.transmission} />
+                    <Row label="Combustible" value={v.fuel} />
                     <Link
                       to="/catalogo/$slug"
-                      params={{ slug: v!.slug }}
+                      params={{ slug: v.slug }}
                       onClick={() => setOpen(false)}
                       className="block pt-2 text-xs font-semibold uppercase tracking-[0.16em] text-camel"
                     >
@@ -84,7 +93,7 @@ export function CompareBar() {
                     </Link>
                     <button
                       type="button"
-                      onClick={() => compare.remove(v!.id)}
+                      onClick={() => compare.remove(v.id)}
                       className="text-xs uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground"
                     >
                       Quitar

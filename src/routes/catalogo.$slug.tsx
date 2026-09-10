@@ -4,14 +4,15 @@ import { Check, Heart } from "lucide-react";
 import { FinanceSimulator } from "@/components/FinanceSimulator";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { NotifyForm } from "@/components/NotifyForm";
-import { getVehicleBySlug, TYPE_LABEL } from "@/data/vehicles";
+import { TYPE_LABEL } from "@/data/vehicles";
+import { fetchVehicleBySlug } from "@/lib/vehicles.server";
 import { formatKm, formatPrice } from "@/lib/format";
 import { useCompare } from "@/lib/compare";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/catalogo/$slug")({
-  loader: ({ params }) => {
-    const vehicle = getVehicleBySlug(params.slug);
+  loader: async ({ params }) => {
+    const vehicle = await fetchVehicleBySlug({ data: params.slug });
     if (!vehicle) throw notFound();
     return { vehicle };
   },
