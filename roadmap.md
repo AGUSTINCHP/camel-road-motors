@@ -11,12 +11,12 @@
 - [x] SEO por página y por vehículo
 
 ## Ampliación pedida
-- [ ] Home: carrusel de testimonios
-- [ ] Home: grilla de marcas clickeables que lleva al catálogo filtrado
-- [ ] Catálogo: leer marca/tipo desde la URL (search params)
-- [ ] Sección de zonas de cobertura (Pilar, El Talar/Tigre, Pacheco, Malvinas Argentinas)
-- [ ] Formulario "Tomamos tu usado" (sin tasación automática, deriva a WhatsApp)
-- [ ] Modal de WhatsApp: campo editable "qué vehículo busca"
-- [ ] Newsletter en el footer (email o WhatsApp) + redes sociales
+- [x] Home: carrusel de testimonios
+- [x] Home: grilla de marcas clickeables que lleva al catálogo filtrado
+- [x] Catálogo: leer marca/tipo desde la URL (search params)
+- [x] Sección de zonas de cobertura (Pilar, El Talar/Tigre, Pacheco, Malvinas Argentinas)
+- [x] Formulario "Tomamos tu usado" (sin tasación automática, deriva a WhatsApp)
+- [x] Modal de WhatsApp: campo editable "qué vehículo busca"
+- [x] Newsletter en el footer (email o WhatsApp) + redes sociales
 - [ ] Panel de administración con login para cargar/editar/dar de baja vehículos
 - [ ] Catálogo público leyendo el stock del panel (Lovable Cloud)
