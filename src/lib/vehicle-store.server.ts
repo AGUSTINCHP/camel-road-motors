@@ -7,12 +7,17 @@
 // código: todo pasa por las funciones de abajo.
 import { randomUUID } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-import { vehicles as seedVehicles, type Vehicle, type VehicleType } from "@/data/vehicles";
+import { join } from "node:path";
+import {
+  vehicles as seedVehicles,
+  type Currency,
+  type Vehicle,
+  type VehicleType,
+} from "@/data/vehicles";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = join(__dirname, "..", "..", "data");
+// process.cwd() (no una ruta relativa al archivo) — así el JSON queda al
+// lado del proyecto y no dentro de .output/, que se borra en cada build.
+const DATA_DIR = join(process.cwd(), "data");
 const STORE_PATH = join(DATA_DIR, "vehicles-store.json");
 
 export type VehicleInput = {
@@ -22,6 +27,7 @@ export type VehicleInput = {
   version: string;
   year: number;
   price: number;
+  currency: Currency;
   km: number;
   fuel: string;
   transmission: string;

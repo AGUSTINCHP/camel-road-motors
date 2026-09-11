@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Scale } from "lucide-react";
 import { TYPE_LABEL, type Vehicle } from "@/data/vehicles";
-import { formatKm, formatPrice } from "@/lib/format";
+import { formatKm, formatMoney } from "@/lib/format";
 import { useCompare } from "@/lib/compare";
 import { cn } from "@/lib/utils";
 
@@ -42,7 +42,9 @@ export function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
         </p>
 
         <div className="mt-auto grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3 pt-6">
-          <p className="min-w-0 font-display text-2xl">{formatPrice(vehicle.price)}</p>
+          <p className="min-w-0 font-display text-2xl">
+            {formatMoney(vehicle.price, vehicle.currency)}
+          </p>
           <button
             type="button"
             onClick={() => compare.toggle(vehicle.id)}

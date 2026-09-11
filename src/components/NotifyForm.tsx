@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { whatsappUrl } from "@/lib/whatsapp";
+import { useSiteContent } from "@/lib/site-content-context";
 
 export function NotifyForm({ prefill = "" }: { prefill?: string }) {
+  const { contact } = useSiteContent();
   const [nombre, setNombre] = useState("");
   const [contacto, setContacto] = useState("");
   const [busqueda, setBusqueda] = useState(prefill);
@@ -13,6 +15,7 @@ export function NotifyForm({ prefill = "" }: { prefill?: string }) {
     window.open(
       whatsappUrl(
         `Hola Suzuki Motors, soy ${nombre}. Busco: ${busqueda}. Avisenme cuando entre algo así. Mi contacto: ${contacto}.`,
+        contact.whatsappNumber,
       ),
       "_blank",
       "noopener,noreferrer",

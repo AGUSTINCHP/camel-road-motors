@@ -1,8 +1,9 @@
 import { useRef, useState, type FormEvent } from "react";
-import { Loader2, Star, Upload, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, Star, Upload, X } from "lucide-react";
 import type { StoredVehicle } from "@/lib/vehicle-store.server";
-import type { VehicleType } from "@/data/vehicles";
+import type { Currency, VehicleType } from "@/data/vehicles";
 import { uploadVehiclePhoto } from "@/lib/upload.server";
+import { RetryImage } from "@/components/admin/RetryImage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,6 +24,7 @@ export type VehicleFormValues = {
   version: string;
   year: number;
   price: number;
+  currency: Currency;
   km: number;
   fuel: string;
   transmission: string;
@@ -38,10 +40,18 @@ export type VehicleFormValues = {
 
 const TYPES: { value: VehicleType; label: string }[] = [
   { value: "auto", label: "Auto" },
+  { value: "camioneta", label: "Camioneta" },
   { value: "moto", label: "Moto" },
   { value: "cuatriciclo", label: "Cuatriciclo" },
   { value: "lancha", label: "Lancha" },
 ];
+
+const CURRENCIES: { value: Currency; label: string }[] = [
+  { value: "USD", label: "Dólares (USD)" },
+  { value: "ARS", label: "Pesos (ARS)" },
+];
+
+const DOOR_TYPES: VehicleType[] = ["auto", "camioneta"];
 
 const DEFAULT_HIGHLIGHTS = [
   "Motor y caja verificados en banco",
@@ -57,6 +67,7 @@ function emptyValues(): VehicleFormValues {
     version: "",
     year: new Date().getFullYear(),
     price: 0,
+    currency: "USD",
     km: 0,
     fuel: "Nafta",
     transmission: "Manual",
@@ -68,29 +79,6 @@ function emptyValues(): VehicleFormValues {
     featured: false,
     published: true,
   };
-}
-
-// El dev server tarda un instante en "enterarse" de una foto recién subida a
-// /public/uploads: la primera carga puede devolver 404 aunque el archivo ya
-// esté en disco. Reintenta un par de veces antes de darse por vencido.
-const MAX_IMAGE_RETRIES = 3;
-
-function RetryImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
-  const [attempt, setAttempt] = useState(0);
-
-  return (
-    <img
-      key={src}
-      src={attempt === 0 ? src : `${src}?retry=${attempt}`}
-      alt={alt}
-      className={className}
-      onError={() => {
-        if (attempt < MAX_IMAGE_RETRIES) {
-          setTimeout(() => setAttempt((a) => a + 1), 400 * (attempt + 1));
-        }
-      }}
-    />
-  );
 }
 
 export function VehicleForm({
@@ -111,6 +99,7 @@ export function VehicleForm({
           version: initial.version,
           year: initial.year,
           price: initial.price,
+          currency: initial.currency,
           km: initial.km,
           fuel: initial.fuel,
           transmission: initial.transmission,
@@ -160,6 +149,14 @@ export function VehicleForm({
       "images",
       values.images.filter((i) => i !== url),
     );
+  }
+
+  function moveImage(index: number, direction: -1 | 1) {
+    const target = index + direction;
+    if (target < 0 || target >= values.images.length) return;
+    const next = [...values.images];
+    [next[index], next[target]] = [next[target]!, next[index]!];
+    set("images", next);
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -225,13 +222,28 @@ export function VehicleForm({
             />
           </div>
           <div className="space-y-2">
-            <Label>Precio (USD)</Label>
+            <Label>Precio</Label>
             <Input
               type="number"
               value={values.price}
               onChange={(e) => set("price", Number(e.target.value))}
               required
             />
+          </div>
+          <div className="space-y-2">
+            <Label>Moneda</Label>
+            <Select value={values.currency} onValueChange={(v) => set("currency", v as Currency)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {CURRENCIES.map((c) => (
+                  <SelectItem key={c.value} value={c.value}>
+                    {c.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label>Kilometraje</Label>
@@ -262,7 +274,7 @@ export function VehicleForm({
             <Label>Motor</Label>
             <Input value={values.engine} onChange={(e) => set("engine", e.target.value)} required />
           </div>
-          {values.type === "auto" ? (
+          {DOOR_TYPES.includes(values.type) ? (
             <div className="space-y-2">
               <Label>Puertas</Label>
               <Input
@@ -278,9 +290,14 @@ export function VehicleForm({
       <section className="space-y-4">
         <h2 className="text-lg font-semibold">Fotos</h2>
         <div className="flex flex-wrap gap-3">
-          {values.images.map((url) => (
+          {values.images.map((url, index) => (
             <div key={url} className="group relative h-24 w-24 overflow-hidden border border-border">
               <RetryImage src={url} alt="" className="h-full w-full object-cover" />
+              {index === 0 ? (
+                <span className="absolute left-1 top-1 bg-camel px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-accent-foreground">
+                  Portada
+                </span>
+              ) : null}
               <button
                 type="button"
                 onClick={() => removeImage(url)}
@@ -289,6 +306,26 @@ export function VehicleForm({
               >
                 <X className="h-3 w-3" />
               </button>
+              <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-ink/70 px-1 py-1 opacity-0 transition group-hover:opacity-100">
+                <button
+                  type="button"
+                  onClick={() => moveImage(index, -1)}
+                  disabled={index === 0}
+                  aria-label="Mover antes"
+                  className="p-1 text-primary-foreground disabled:opacity-30"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => moveImage(index, 1)}
+                  disabled={index === values.images.length - 1}
+                  aria-label="Mover después"
+                  className="p-1 text-primary-foreground disabled:opacity-30"
+                >
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </button>
+              </div>
             </div>
           ))}
           <button
@@ -312,7 +349,15 @@ export function VehicleForm({
           onChange={(e) => handleFiles(e.target.files)}
         />
         <p className="text-xs text-muted-foreground">
-          Podés seleccionar varias fotos a la vez. JPG, PNG o WEBP, hasta 8MB c/u.
+          Podés seleccionar varias fotos a la vez. Pasá el mouse sobre una foto para reordenarla
+          (las flechas) o para quitarla (la X) — la primera de la lista es la portada, la que se
+          ve en el catálogo y en las tarjetas.
+        </p>
+        <p className="text-xs text-muted-foreground">
+          <strong>Formato recomendado:</strong> fotos horizontales (apaisadas, no verticales),
+          en JPG o WEBP, de al menos 1200×900px. Con buena luz natural, el vehículo completo y
+          centrado en el cuadro. Ideal que pesen entre 300KB y 2MB cada una — aceptamos hasta
+          8MB, pero fotos más livianas cargan más rápido en el celular del cliente.
         </p>
       </section>
 

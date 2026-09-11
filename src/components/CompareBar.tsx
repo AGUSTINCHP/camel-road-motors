@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { fetchVehiclesByIds } from "@/lib/vehicles.server";
-import { formatKm, formatPrice } from "@/lib/format";
+import { formatKm, formatMoney } from "@/lib/format";
 import { useCompare } from "@/lib/compare";
 
 export function CompareBar() {
@@ -77,7 +77,7 @@ export function CompareBar() {
                     <p className="font-display text-lg">
                       {v.brand} {v.model}
                     </p>
-                    <Row label="Precio" value={formatPrice(v.price)} />
+                    <Row label="Precio" value={formatMoney(v.price, v.currency)} />
                     <Row label="Año" value={String(v.year)} />
                     <Row label="Kilómetros" value={formatKm(v.km)} />
                     <Row label="Motor" value={v.engine} />

@@ -1,17 +1,16 @@
-// Server-only. Guarda fotos subidas desde el panel en /public/uploads y
-// devuelve la ruta pública para guardarla en el vehículo. Igual que el
+// Server-only. Guarda fotos subidas desde el panel en data/uploads y
+// devuelve la ruta pública (/uploads/<archivo>, servida por
+// serve-upload.server.ts) para guardarla en el vehículo. Igual que el
 // store de vehículos: funciona sobre filesystem local (Node persistente).
 // Si se despliega en un runtime sin disco, se reemplaza por un bucket
 // (S3, R2, etc.) sin cambiar la forma en que el front la usa.
 import { randomUUID } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
-import { dirname, extname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { extname, join } from "node:path";
 import { createServerFn } from "@tanstack/react-start";
 import { requireAdmin } from "@/lib/admin-session.server";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const UPLOADS_DIR = join(__dirname, "..", "..", "public", "uploads");
+const UPLOADS_DIR = join(process.cwd(), "data", "uploads");
 
 const ALLOWED_EXT = new Set([".jpg", ".jpeg", ".png", ".webp"]);
 const MAX_SIZE_BYTES = 8 * 1024 * 1024; // 8MB por foto

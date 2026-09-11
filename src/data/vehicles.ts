@@ -7,7 +7,8 @@ import moto2 from "@/assets/moto-2.jpg";
 import quad1 from "@/assets/quad-1.jpg";
 import lancha1 from "@/assets/lancha-1.jpg";
 
-export type VehicleType = "auto" | "moto" | "cuatriciclo" | "lancha";
+export type VehicleType = "auto" | "camioneta" | "moto" | "cuatriciclo" | "lancha";
+export type Currency = "USD" | "ARS";
 
 export type Vehicle = {
   id: string;
@@ -18,6 +19,7 @@ export type Vehicle = {
   version: string;
   year: number;
   price: number;
+  currency: Currency;
   km: number;
   fuel: string;
   transmission: string;
@@ -33,6 +35,7 @@ export type Vehicle = {
 
 export const TYPE_LABEL: Record<VehicleType, string> = {
   auto: "Auto",
+  camioneta: "Camioneta",
   moto: "Moto",
   cuatriciclo: "Cuatriciclo",
   lancha: "Lancha",
@@ -44,6 +47,10 @@ const galleries: Record<VehicleType, string[][]> = {
     [car2, car3, car1],
     [car3, car1, car4],
     [car4, car2, car3],
+  ],
+  camioneta: [
+    [car4, car1, car2],
+    [car2, car4, car3],
   ],
   moto: [
     [moto1, moto2],
@@ -77,17 +84,17 @@ const rows: Row[] = [
   ["auto", "Renault", "Sandero", "1.6 Privilege", 2016, 7800, 108000, "Nafta", "Manual", "1.6 105cv", "Gris", "José León Suárez", "5"],
   ["auto", "Peugeot", "208", "1.6 Allure", 2019, 12400, 55000, "Nafta", "Manual", "1.6 115cv", "Azul", "San Martín", "5"],
   ["auto", "Fiat", "Cronos", "1.3 Drive GSE", 2021, 13900, 38000, "Nafta", "Manual", "1.3 99cv", "Blanco", "Villa Ballester", "4"],
-  ["auto", "Volkswagen", "Amarok", "2.0 TDI Highline 4x4", 2017, 27500, 132000, "Diésel", "Automática", "2.0 180cv", "Gris Oscuro", "San Martín", "4"],
-  ["auto", "Toyota", "Hilux", "2.8 SRV 4x4", 2019, 38500, 98000, "Diésel", "Automática", "2.8 177cv", "Plata", "San Martín", "4"],
-  ["auto", "Ford", "Ranger", "3.2 XLT 4x4", 2018, 32000, 115000, "Diésel", "Automática", "3.2 200cv", "Negro", "Villa Ballester", "4"],
-  ["auto", "Chevrolet", "S10", "2.8 LTZ 4x2", 2016, 24500, 148000, "Diésel", "Manual", "2.8 200cv", "Blanco", "José León Suárez", "4"],
+  ["camioneta", "Volkswagen", "Amarok", "2.0 TDI Highline 4x4", 2017, 27500, 132000, "Diésel", "Automática", "2.0 180cv", "Gris Oscuro", "San Martín", "4"],
+  ["camioneta", "Toyota", "Hilux", "2.8 SRV 4x4", 2019, 38500, 98000, "Diésel", "Automática", "2.8 177cv", "Plata", "San Martín", "4"],
+  ["camioneta", "Ford", "Ranger", "3.2 XLT 4x4", 2018, 32000, 115000, "Diésel", "Automática", "3.2 200cv", "Negro", "Villa Ballester", "4"],
+  ["camioneta", "Chevrolet", "S10", "2.8 LTZ 4x2", 2016, 24500, 148000, "Diésel", "Manual", "2.8 200cv", "Blanco", "José León Suárez", "4"],
   ["auto", "Jeep", "Renegade", "1.8 Sport AT", 2019, 19800, 67000, "Nafta", "Automática", "1.8 139cv", "Gris", "San Martín", "5"],
   ["auto", "Nissan", "Kicks", "1.6 Advance CVT", 2020, 21500, 49000, "Nafta", "Automática", "1.6 120cv", "Blanco", "Villa Ballester", "5"],
   ["auto", "Honda", "HR-V", "1.8 EXL CVT", 2018, 22400, 84000, "Nafta", "Automática", "1.8 140cv", "Negro", "San Martín", "5"],
   ["auto", "Volkswagen", "T-Cross", "1.6 Comfortline AT", 2021, 24900, 41000, "Nafta", "Automática", "1.6 110cv", "Gris Platino", "San Martín", "5"],
   ["auto", "Citroën", "C3", "1.6 Feel", 2017, 8700, 96000, "Nafta", "Manual", "1.6 115cv", "Beige", "Villa Ballester", "5"],
   ["auto", "Renault", "Duster", "1.6 Dynamique", 2018, 14200, 88000, "Nafta", "Manual", "1.6 110cv", "Marrón", "José León Suárez", "5"],
-  ["auto", "Fiat", "Toro", "2.0 Volcano 4x4 AT", 2020, 28900, 73000, "Diésel", "Automática", "2.0 170cv", "Blanco", "San Martín", "4"],
+  ["camioneta", "Fiat", "Toro", "2.0 Volcano 4x4 AT", 2020, 28900, 73000, "Diésel", "Automática", "2.0 170cv", "Blanco", "San Martín", "4"],
   ["auto", "Volkswagen", "Vento", "2.0 TSI Highline", 2015, 15800, 121000, "Nafta", "Automática", "2.0 211cv", "Negro", "Villa Ballester", "4"],
   ["auto", "Toyota", "Corolla", "1.8 XEI CVT", 2020, 23800, 52000, "Nafta", "Automática", "1.8 144cv", "Plata", "San Martín", "4"],
   ["auto", "Chevrolet", "Cruze", "1.4 LTZ Turbo", 2019, 18900, 69000, "Nafta", "Automática", "1.4 153cv", "Azul", "San Martín", "5"],
@@ -144,6 +151,7 @@ export const vehicles: Vehicle[] = rows.map((row, index) => {
     version,
     year,
     price,
+    currency: "USD",
     km,
     fuel,
     transmission,

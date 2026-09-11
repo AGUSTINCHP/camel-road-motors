@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as GestoriaRouteImport } from './routes/gestoria'
 import { Route as SegurosRouteImport } from './routes/seguros'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminContenidoRouteImport } from './routes/admin/contenido'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as CatalogoIndexRouteImport } from './routes/catalogo.index'
 import { Route as CatalogoSlugRouteImport } from './routes/catalogo.$slug'
@@ -37,6 +38,11 @@ const SegurosRoute = SegurosRouteImport.update({
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/admin/',
   path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminContenidoRoute = AdminContenidoRouteImport.update({
+  id: '/admin/contenido',
+  path: '/admin/contenido',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
@@ -69,6 +75,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/gestoria': typeof GestoriaRoute
   '/seguros': typeof SegurosRoute
+  '/admin/contenido': typeof AdminContenidoRoute
   '/admin/login': typeof AdminLoginRoute
   '/catalogo/$slug': typeof CatalogoSlugRoute
   '/admin/': typeof AdminIndexRoute
@@ -80,6 +87,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/gestoria': typeof GestoriaRoute
   '/seguros': typeof SegurosRoute
+  '/admin/contenido': typeof AdminContenidoRoute
   '/admin/login': typeof AdminLoginRoute
   '/catalogo/$slug': typeof CatalogoSlugRoute
   '/admin': typeof AdminIndexRoute
@@ -92,6 +100,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/gestoria': typeof GestoriaRoute
   '/seguros': typeof SegurosRoute
+  '/admin/contenido': typeof AdminContenidoRoute
   '/admin/login': typeof AdminLoginRoute
   '/catalogo/$slug': typeof CatalogoSlugRoute
   '/admin/': typeof AdminIndexRoute
@@ -105,6 +114,7 @@ export interface FileRouteTypes {
     | '/'
     | '/gestoria'
     | '/seguros'
+    | '/admin/contenido'
     | '/admin/login'
     | '/catalogo/$slug'
     | '/admin/'
@@ -116,6 +126,7 @@ export interface FileRouteTypes {
     | '/'
     | '/gestoria'
     | '/seguros'
+    | '/admin/contenido'
     | '/admin/login'
     | '/catalogo/$slug'
     | '/admin'
@@ -127,6 +138,7 @@ export interface FileRouteTypes {
     | '/'
     | '/gestoria'
     | '/seguros'
+    | '/admin/contenido'
     | '/admin/login'
     | '/catalogo/$slug'
     | '/admin/'
@@ -139,6 +151,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   GestoriaRoute: typeof GestoriaRoute
   SegurosRoute: typeof SegurosRoute
+  AdminContenidoRoute: typeof AdminContenidoRoute
   AdminLoginRoute: typeof AdminLoginRoute
   CatalogoSlugRoute: typeof CatalogoSlugRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -175,6 +188,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/contenido': {
+      id: '/admin/contenido'
+      path: '/admin/contenido'
+      fullPath: '/admin/contenido'
+      preLoaderRoute: typeof AdminContenidoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/login': {
@@ -219,6 +239,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   GestoriaRoute: GestoriaRoute,
   SegurosRoute: SegurosRoute,
+  AdminContenidoRoute: AdminContenidoRoute,
   AdminLoginRoute: AdminLoginRoute,
   CatalogoSlugRoute: CatalogoSlugRoute,
   AdminIndexRoute: AdminIndexRoute,

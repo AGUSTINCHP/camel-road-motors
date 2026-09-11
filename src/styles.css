@@ -92,6 +92,37 @@
   font-weight: 600;
 }
 
+/* Estilos para el HTML que produce el editor de texto enriquecido del panel
+   (negrita/cursiva ya las da el navegador vía <strong>/<em>; esto es solo
+   espaciado entre párrafos, listas y enlaces). */
+@utility prose-suzuki {
+  & p {
+    margin-top: 0.75em;
+  }
+  & p:first-child {
+    margin-top: 0;
+  }
+  & ul,
+  & ol {
+    margin-top: 0.75em;
+    padding-left: 1.25em;
+  }
+  & ul {
+    list-style-type: disc;
+  }
+  & ol {
+    list-style-type: decimal;
+  }
+  & li + li {
+    margin-top: 0.35em;
+  }
+  & a {
+    color: var(--color-camel);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in oklch, var(--color-camel) 40%, transparent);
+  }
+}
+
 @utility range-camel {
   appearance: none;
   width: 100%;

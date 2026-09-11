@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { whatsappUrl } from "@/lib/whatsapp";
+import { useSiteContent } from "@/lib/site-content-context";
 
 export function TradeInForm() {
+  const { contact } = useSiteContent();
   const [form, setForm] = useState({
     nombre: "",
     marca: "",
@@ -22,7 +24,7 @@ export function TradeInForm() {
       `${form.marca} ${form.modelo} ${form.anio} · ${form.km} km · estado ${form.estado}.`,
       "¿Lo pueden evaluar?",
     ].join("\n");
-    window.open(whatsappUrl(msg), "_blank", "noopener,noreferrer");
+    window.open(whatsappUrl(msg, contact.whatsappNumber), "_blank", "noopener,noreferrer");
   };
 
   return (

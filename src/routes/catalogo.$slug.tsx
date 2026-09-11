@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { Check, Heart } from "lucide-react";
-import { FinanceSimulator } from "@/components/FinanceSimulator";
+import { Check, Heart, Landmark } from "lucide-react";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { NotifyForm } from "@/components/NotifyForm";
 import { TYPE_LABEL } from "@/data/vehicles";
 import { fetchVehicleBySlug } from "@/lib/vehicles.server";
-import { formatKm, formatPrice } from "@/lib/format";
+import { formatKm, formatMoney } from "@/lib/format";
 import { useCompare } from "@/lib/compare";
+import { useSiteContent } from "@/lib/site-content-context";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/catalogo/$slug")({
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/catalogo/$slug")({
     const title = `${v.brand} ${v.model} ${v.version} ${v.year} | Suzuki Motors`;
     const description = `${TYPE_LABEL[v.type]} ${v.brand} ${v.model} ${v.year} con ${formatKm(
       v.km,
-    )} en ${formatPrice(v.price)}. Verificado y listo para transferir.`;
+    )} en ${formatMoney(v.price, v.currency)}. Verificado y listo para transferir.`;
     return {
       meta: [
         { title },
@@ -47,7 +47,7 @@ export const Route = createFileRoute("/catalogo/$slug")({
             brand: v.brand,
             modelDate: v.year,
             mileageFromOdometer: { "@type": "QuantitativeValue", value: v.km, unitCode: "KMT" },
-            offers: { "@type": "Offer", price: v.price, priceCurrency: "USD" },
+            offers: { "@type": "Offer", price: v.price, priceCurrency: v.currency },
           }),
         },
       ],
@@ -58,6 +58,7 @@ export const Route = createFileRoute("/catalogo/$slug")({
 
 function VehicleDetail() {
   const { vehicle } = Route.useLoaderData();
+  const { financing } = useSiteContent();
   const [active, setActive] = useState(0);
   const compare = useCompare();
   const selected = compare.isSelected(vehicle.id);
@@ -145,7 +146,7 @@ function VehicleDetail() {
           <p className="mt-3 text-muted-foreground">
             {vehicle.year} · {formatKm(vehicle.km)} · {vehicle.location}
           </p>
-          <p className="mt-6 font-display text-4xl">{formatPrice(vehicle.price)}</p>
+          <p className="mt-6 font-display text-4xl">{formatMoney(vehicle.price, vehicle.currency)}</p>
 
           <div className="mt-8 space-y-3">
             <WhatsAppButton
@@ -155,7 +156,7 @@ function VehicleDetail() {
                 vehicle: `${vehicle.brand} ${vehicle.model} ${vehicle.version} ${vehicle.year}`,
                 subject: `Me interesa el ${vehicle.brand} ${vehicle.model} ${vehicle.version} ${vehicle.year} (${formatKm(
                   vehicle.km,
-                )}) publicado en ${formatPrice(vehicle.price)}.`,
+                )}) publicado en ${formatMoney(vehicle.price, vehicle.currency)}.`,
               }}
             />
             <button
@@ -171,8 +172,28 @@ function VehicleDetail() {
             </button>
           </div>
 
-          <div className="mt-8">
-            <FinanceSimulator price={vehicle.price} />
+          <div className="mt-8 border border-border bg-muted/30 p-6">
+            <p className="eyebrow text-camel">Financiación</p>
+            <h3 className="mt-2 flex items-center gap-2 text-xl">
+              <Landmark className="h-5 w-5 text-camel" /> {financing.title}
+            </h3>
+            <div
+              className="prose-suzuki mt-3 text-sm text-muted-foreground"
+              dangerouslySetInnerHTML={{ __html: financing.text }}
+            />
+            <WhatsAppButton
+              className="mt-5 w-full"
+              context={{
+                title: `Financiación — ${vehicle.brand} ${vehicle.model} ${vehicle.year}`,
+                vehicle: `${vehicle.brand} ${vehicle.model} ${vehicle.version} ${vehicle.year}`,
+                subject: `Quiero consultar opciones de financiación con entidades financieras para el ${vehicle.brand} ${vehicle.model} ${vehicle.version} ${vehicle.year}, publicado en ${formatMoney(
+                  vehicle.price,
+                  vehicle.currency,
+                )}.`,
+              }}
+            >
+              Consultar financiación
+            </WhatsAppButton>
           </div>
         </div>
       </div>

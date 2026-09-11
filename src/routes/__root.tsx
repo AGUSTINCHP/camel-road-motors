@@ -16,6 +16,8 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { WhatsAppFab } from "@/components/WhatsAppFab";
 import { CompareBar } from "@/components/CompareBar";
+import { fetchSiteContent } from "@/lib/site-content.server";
+import { SiteContentProvider } from "@/lib/site-content-context";
 
 function NotFoundComponent() {
   return (
@@ -76,6 +78,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  loader: async () => ({ siteContent: await fetchSiteContent() }),
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -123,29 +126,34 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const { siteContent } = Route.useLoaderData();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isAdmin = pathname.startsWith("/admin");
 
   if (isAdmin) {
     return (
       <QueryClientProvider client={queryClient}>
-        <Outlet />
+        <SiteContentProvider value={siteContent}>
+          <Outlet />
+        </SiteContentProvider>
       </QueryClientProvider>
     );
   }
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="flex min-h-screen flex-col">
-        <Header />
-        <main className="flex-1">
-          {/* Required: nested routes render here. */}
-          <Outlet />
-        </main>
-        <Footer />
-      </div>
-      <WhatsAppFab />
-      <CompareBar />
+      <SiteContentProvider value={siteContent}>
+        <div className="flex min-h-screen flex-col">
+          <Header />
+          <main className="flex-1">
+            {/* Required: nested routes render here. */}
+            <Outlet />
+          </main>
+          <Footer />
+        </div>
+        <WhatsAppFab />
+        <CompareBar />
+      </SiteContentProvider>
     </QueryClientProvider>
   );
 }

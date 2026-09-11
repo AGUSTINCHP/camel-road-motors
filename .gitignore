@@ -24,6 +24,11 @@ dist-ssr
 /data/
 /public/uploads/
 
+# Secrets — nunca commitear. Ver .env.example para las variables que hacen falta.
+.env
+.env.*
+!.env.example
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -2,9 +2,11 @@ import { Link } from "@tanstack/react-router";
 import { Facebook, Instagram } from "lucide-react";
 import { Wordmark } from "@/components/Wordmark";
 import { NewsletterForm } from "@/components/NewsletterForm";
-import { WHATSAPP_DISPLAY, whatsappUrl } from "@/lib/whatsapp";
+import { whatsappUrl } from "@/lib/whatsapp";
+import { useSiteContent } from "@/lib/site-content-context";
 
 export function Footer() {
+  const { contact } = useSiteContent();
   return (
     <footer className="mt-24 bg-ink text-primary-foreground">
       <div className="mx-auto grid max-w-6xl gap-12 px-5 py-16 sm:grid-cols-2 lg:grid-cols-4 lg:px-8">
@@ -15,7 +17,7 @@ export function Footer() {
           </p>
           <div className="mt-6 flex gap-3">
             <a
-              href="https://instagram.com"
+              href={contact.instagramUrl}
               target="_blank"
               rel="noreferrer"
               aria-label="Instagram"
@@ -24,7 +26,7 @@ export function Footer() {
               <Instagram className="h-4 w-4" />
             </a>
             <a
-              href="https://facebook.com"
+              href={contact.facebookUrl}
               target="_blank"
               rel="noreferrer"
               aria-label="Facebook"
@@ -59,10 +61,9 @@ export function Footer() {
         <div>
           <p className="eyebrow text-camel">Zonas de cobertura</p>
           <ul className="mt-5 space-y-3 text-sm text-primary-foreground/80">
-            <li>Pilar</li>
-            <li>El Talar / Tigre</li>
-            <li>Pacheco</li>
-            <li>Malvinas Argentinas</li>
+            {contact.zones.map((z) => (
+              <li key={z.title}>{z.title}</li>
+            ))}
           </ul>
         </div>
 
@@ -71,15 +72,18 @@ export function Footer() {
           <ul className="mt-5 space-y-3 text-sm text-primary-foreground/80">
             <li>
               <a
-                href={whatsappUrl("Hola Suzuki Motors, quería hacerles una consulta.")}
+                href={whatsappUrl(
+                  "Hola Suzuki Motors, quería hacerles una consulta.",
+                  contact.whatsappNumber,
+                )}
                 target="_blank"
                 rel="noreferrer"
                 className="hover:text-camel"
               >
-                {WHATSAPP_DISPLAY}
+                {contact.whatsappDisplay}
               </a>
             </li>
-            <li>Lunes a sábado, 9 a 19 h</li>
+            <li>{contact.hours}</li>
           </ul>
           <NewsletterForm />
         </div>

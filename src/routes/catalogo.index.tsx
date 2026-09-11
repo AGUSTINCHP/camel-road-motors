@@ -6,10 +6,13 @@ import { VehicleCard } from "@/components/VehicleCard";
 import { NotifyForm } from "@/components/NotifyForm";
 import { type VehicleType } from "@/data/vehicles";
 import { fetchPublishedVehicles } from "@/lib/vehicles.server";
+import { fetchSiteContent } from "@/lib/site-content.server";
+import { toUsdEquivalent } from "@/lib/currency";
+import { useSiteContent } from "@/lib/site-content-context";
 
 type CatalogSearch = { marca?: string; tipo?: VehicleType };
 
-const VALID_TYPES: VehicleType[] = ["auto", "moto", "cuatriciclo", "lancha"];
+const VALID_TYPES: VehicleType[] = ["auto", "camioneta", "moto", "cuatriciclo", "lancha"];
 
 export const Route = createFileRoute("/catalogo/")({
   validateSearch: (search: Record<string, unknown>): CatalogSearch => {
@@ -22,11 +25,12 @@ export const Route = createFileRoute("/catalogo/")({
     };
   },
   loader: async () => {
-    const vehicles = await fetchPublishedVehicles();
+    const [vehicles, { settings }] = await Promise.all([fetchPublishedVehicles(), fetchSiteContent()]);
+    // El slider de precio trabaja en dólares de referencia: convertimos los
+    // vehículos publicados en pesos para que entren en la misma escala.
+    const usdPrices = vehicles.map((v) => toUsdEquivalent(v.price, v.currency, settings.arsPerUsd));
     const priceRange: [number, number] =
-      vehicles.length > 0
-        ? [Math.min(...vehicles.map((v) => v.price)), Math.max(...vehicles.map((v) => v.price))]
-        : [0, 0];
+      vehicles.length > 0 ? [Math.min(...usdPrices), Math.max(...usdPrices)] : [0, 0];
     const kmRange: [number, number] = [0, Math.max(0, ...vehicles.map((v) => v.km))];
     const yearRange: [number, number] =
       vehicles.length > 0
@@ -57,6 +61,7 @@ export const Route = createFileRoute("/catalogo/")({
 
 function Catalogo() {
   const { vehicles, priceRange, kmRange, yearRange } = Route.useLoaderData();
+  const { settings } = useSiteContent();
   const search = Route.useSearch();
   const baseFilters: Filters = {
     type: "todos",
@@ -100,11 +105,11 @@ function Catalogo() {
         (v) =>
           (!filters.brand || v.brand === filters.brand) &&
           (!filters.model || v.model === filters.model) &&
-          v.price <= filters.maxPrice &&
+          toUsdEquivalent(v.price, v.currency, settings.arsPerUsd) <= filters.maxPrice &&
           v.km <= filters.maxKm &&
           v.year >= filters.minYear,
       ),
-    [byType, filters],
+    [byType, filters, settings.arsPerUsd],
   );
 
   const panel = (

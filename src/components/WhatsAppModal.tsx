@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { whatsappUrl } from "@/lib/whatsapp";
+import { useSiteContent } from "@/lib/site-content-context";
 
 export type WhatsAppContext = {
   title: string;
@@ -21,6 +22,7 @@ export function WhatsAppModal({
   const [apellido, setApellido] = useState("");
   const [zona, setZona] = useState("");
   const [vehiculo, setVehiculo] = useState(context.vehicle ?? "");
+  const { contact } = useSiteContent();
 
   useEffect(() => {
     if (open) setVehiculo(context.vehicle ?? "");
@@ -49,7 +51,7 @@ export function WhatsAppModal({
     ]
       .filter(Boolean)
       .join("\n");
-    window.open(whatsappUrl(message.slice(0, 900)), "_blank", "noopener,noreferrer");
+    window.open(whatsappUrl(message.slice(0, 900), contact.whatsappNumber), "_blank", "noopener,noreferrer");
     onClose();
   };
 

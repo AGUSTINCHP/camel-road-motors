@@ -25,7 +25,14 @@ export function FilterPanel({
   bounds: { price: [number, number]; km: [number, number]; year: [number, number] };
   onReset: () => void;
 }) {
-  const types: (VehicleType | "todos")[] = ["todos", "auto", "moto", "cuatriciclo", "lancha"];
+  const types: (VehicleType | "todos")[] = [
+    "todos",
+    "auto",
+    "camioneta",
+    "moto",
+    "cuatriciclo",
+    "lancha",
+  ];
 
   return (
     <div className="space-y-8">
@@ -84,7 +91,7 @@ export function FilterPanel({
 
       <div>
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3">
-          <span className="eyebrow min-w-0 text-camel">Precio hasta</span>
+          <span className="eyebrow min-w-0 text-camel">Precio hasta (ref. en USD)</span>
           <span className="shrink-0 text-sm">{formatPrice(filters.maxPrice)}</span>
         </div>
         <input

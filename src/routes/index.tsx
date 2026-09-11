@@ -7,6 +7,7 @@ import { Testimonials } from "@/components/Testimonials";
 import { CoverageZones } from "@/components/CoverageZones";
 import { TradeInForm } from "@/components/TradeInForm";
 import { fetchPublishedVehicles } from "@/lib/vehicles.server";
+import { useSiteContent } from "@/lib/site-content-context";
 
 export const Route = createFileRoute("/")({
   loader: async () => {
@@ -39,33 +40,20 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-const pillars = [
-  {
-    icon: BadgeCheck,
-    title: "Venta de usados",
-    text: "Unidades revisadas mecánica y documentalmente antes de publicarse.",
-  },
-  {
-    icon: FileText,
-    title: "Gestoría automotor",
-    text: "Transferencias de dominio, altas, bajas y formularios sin vueltas.",
-    to: "/gestoria" as const,
-  },
-  {
-    icon: ShieldCheck,
-    title: "Seguros",
-    text: "Coberturas para autos, motos y náutica con asesoramiento propio.",
-    to: "/seguros" as const,
-  },
+const PILLAR_META = [
+  { icon: BadgeCheck },
+  { icon: FileText, to: "/gestoria" as const },
+  { icon: ShieldCheck, to: "/seguros" as const },
 ];
 
 function Home() {
   const { vehicles, featuredVehicles, newestVehicles } = Route.useLoaderData();
+  const { home } = useSiteContent();
   return (
     <>
       <section className="relative flex min-h-[86vh] items-end overflow-hidden">
         <img
-          src={heroImg}
+          src={home.heroImage || heroImg}
           alt="Salón de vehículos usados de Suzuki Motors"
           width={1920}
           height={1088}
@@ -73,14 +61,14 @@ function Home() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/60 to-ink/10" />
         <div className="relative mx-auto w-full max-w-6xl px-5 pb-16 pt-32 text-primary-foreground lg:px-8">
-          <p className="eyebrow text-camel">Desde 2009 en San Martín</p>
+          <p className="eyebrow text-camel">{home.heroEyebrow}</p>
           <h1 className="mt-5 max-w-3xl font-display text-4xl leading-[1.05] sm:text-6xl lg:text-7xl">
-            Usados elegidos uno por uno.
+            {home.heroTitle}
           </h1>
-          <p className="mt-6 max-w-lg text-base text-primary-foreground/80">
-            Autos, motos, cuatriciclos y lanchas verificados. Te acompañamos con la gestoría y el
-            seguro para que salgas andando.
-          </p>
+          <div
+            className="prose-suzuki mt-6 max-w-lg text-base text-primary-foreground/80"
+            dangerouslySetInnerHTML={{ __html: home.heroSubtitle }}
+          />
           <div className="mt-10 flex flex-wrap gap-3">
             <Link
               to="/catalogo"
@@ -94,21 +82,24 @@ function Home() {
 
       <section className="border-b border-border bg-camel-soft/40">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-14 sm:grid-cols-3 lg:px-8">
-          {pillars.map((p) => (
-            <div key={p.title}>
-              <p.icon className="h-6 w-6 text-camel" />
-              <h3 className="mt-4 text-xl">{p.title}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{p.text}</p>
-              {p.to ? (
-                <Link
-                  to={p.to}
-                  className="mt-4 inline-block text-xs font-semibold uppercase tracking-[0.16em] text-camel"
-                >
-                  Conocer más
-                </Link>
-              ) : null}
-            </div>
-          ))}
+          {home.pillars.map((p, i) => {
+            const meta = PILLAR_META[i]!;
+            return (
+              <div key={p.title}>
+                <meta.icon className="h-6 w-6 text-camel" />
+                <h3 className="mt-4 text-xl">{p.title}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{p.text}</p>
+                {meta.to ? (
+                  <Link
+                    to={meta.to}
+                    className="mt-4 inline-block text-xs font-semibold uppercase tracking-[0.16em] text-camel"
+                  >
+                    Conocer más
+                  </Link>
+                ) : null}
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -144,21 +135,12 @@ function Home() {
         <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
           <div>
             <p className="eyebrow text-camel">Sobre nosotros</p>
-            <h2 className="mt-3 text-3xl sm:text-4xl">
-              Un concesionario de barrio con estándares de agencia premium.
-            </h2>
+            <h2 className="mt-3 text-3xl sm:text-4xl">{home.aboutTitle}</h2>
           </div>
-          <div className="space-y-4 text-muted-foreground">
-            <p>
-              Somos una familia dedicada a la compra y venta de vehículos usados. Cada unidad pasa
-              por revisión mecánica, control de service y verificación de documentación antes de
-              entrar al salón.
-            </p>
-            <p>
-              Trabajamos con toma de usados, financiación propia y acompañamiento completo en la
-              transferencia y el seguro.
-            </p>
-          </div>
+          <div
+            className="prose-suzuki space-y-4 text-muted-foreground"
+            dangerouslySetInnerHTML={{ __html: home.aboutText }}
+          />
         </div>
       </section>
     </>

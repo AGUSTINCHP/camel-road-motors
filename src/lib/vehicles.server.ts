@@ -56,12 +56,13 @@ export const logoutAdminFn = createServerFn({ method: "POST" }).handler(async ()
 // ---------- CRUD de admin (protegido) ----------
 
 const vehicleInputSchema = z.object({
-  type: z.enum(["auto", "moto", "cuatriciclo", "lancha"]),
+  type: z.enum(["auto", "camioneta", "moto", "cuatriciclo", "lancha"]),
   brand: z.string().min(1),
   model: z.string().min(1),
   version: z.string().min(1),
   year: z.coerce.number().int().min(1970).max(2100),
   price: z.coerce.number().min(0),
+  currency: z.enum(["USD", "ARS"]),
   km: z.coerce.number().min(0),
   fuel: z.string().min(1),
   transmission: z.string().min(1),
