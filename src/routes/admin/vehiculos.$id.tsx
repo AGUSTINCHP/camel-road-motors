@@ -1,6 +1,11 @@
 import { createFileRoute, redirect, useNavigate, Link, notFound } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
-import { adminGetVehicle, adminUpdateVehicle, fetchAdminSession } from "@/lib/vehicles.server";
+import {
+  adminGetVehicle,
+  adminListVehicles,
+  adminUpdateVehicle,
+  fetchAdminSession,
+} from "@/lib/vehicles.server";
 import { VehicleForm, type VehicleFormValues } from "@/components/admin/VehicleForm";
 
 export const Route = createFileRoute("/admin/vehiculos/$id")({
@@ -9,15 +14,18 @@ export const Route = createFileRoute("/admin/vehiculos/$id")({
     if (!session.isAdmin) throw redirect({ to: "/admin/login" });
   },
   loader: async ({ params }) => {
-    const vehicle = await adminGetVehicle({ data: params.id });
+    const [vehicle, vehicles] = await Promise.all([
+      adminGetVehicle({ data: params.id }),
+      adminListVehicles(),
+    ]);
     if (!vehicle) throw notFound();
-    return vehicle;
+    return { vehicle, vehicles };
   },
   component: EditarVehiculo,
 });
 
 function EditarVehiculo() {
-  const vehicle = Route.useLoaderData();
+  const { vehicle, vehicles } = Route.useLoaderData();
   const navigate = useNavigate();
 
   async function handleSubmit(values: VehicleFormValues) {
@@ -35,7 +43,12 @@ function EditarVehiculo() {
           Editar {vehicle.brand} {vehicle.model}
         </h1>
       </header>
-      <VehicleForm initial={vehicle} onSubmit={handleSubmit} submitLabel="Guardar cambios" />
+      <VehicleForm
+        initial={vehicle}
+        onSubmit={handleSubmit}
+        submitLabel="Guardar cambios"
+        suggestionSource={vehicles}
+      />
     </div>
   );
 }

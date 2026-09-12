@@ -1,6 +1,6 @@
 import { createFileRoute, redirect, useNavigate, Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
-import { adminCreateVehicle, fetchAdminSession } from "@/lib/vehicles.server";
+import { adminCreateVehicle, adminListVehicles, fetchAdminSession } from "@/lib/vehicles.server";
 import { VehicleForm, type VehicleFormValues } from "@/components/admin/VehicleForm";
 
 export const Route = createFileRoute("/admin/vehiculos/nuevo")({
@@ -8,10 +8,12 @@ export const Route = createFileRoute("/admin/vehiculos/nuevo")({
     const session = await fetchAdminSession();
     if (!session.isAdmin) throw redirect({ to: "/admin/login" });
   },
+  loader: async () => adminListVehicles(),
   component: NuevoVehiculo,
 });
 
 function NuevoVehiculo() {
+  const vehicles = Route.useLoaderData();
   const navigate = useNavigate();
 
   async function handleSubmit(values: VehicleFormValues) {
@@ -27,7 +29,7 @@ function NuevoVehiculo() {
         </Link>
         <h1 className="mt-2 text-2xl">Cargar vehículo</h1>
       </header>
-      <VehicleForm onSubmit={handleSubmit} submitLabel="Publicar vehículo" />
+      <VehicleForm onSubmit={handleSubmit} submitLabel="Publicar vehículo" suggestionSource={vehicles} />
     </div>
   );
 }

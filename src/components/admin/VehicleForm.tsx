@@ -1,9 +1,11 @@
-import { useRef, useState, type FormEvent } from "react";
+import { useMemo, useRef, useState, type FormEvent } from "react";
 import { ArrowLeft, ArrowRight, Loader2, Star, Upload, X } from "lucide-react";
 import type { StoredVehicle } from "@/lib/vehicle-store.server";
 import type { Currency, VehicleType } from "@/data/vehicles";
 import { uploadVehiclePhoto } from "@/lib/upload.server";
+import { useSiteContent } from "@/lib/site-content-context";
 import { RetryImage } from "@/components/admin/RetryImage";
+import { ComboboxField } from "@/components/admin/ComboboxField";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,6 +40,14 @@ export type VehicleFormValues = {
   published: boolean;
 };
 
+/** Datos mínimos del resto del stock, para armar los desplegables de marca/modelo/color a partir de lo que ya cargaste (en vez de un catálogo fijo). */
+export type VehicleSuggestionSource = {
+  type: VehicleType;
+  brand: string;
+  model: string;
+  color: string;
+};
+
 const TYPES: { value: VehicleType; label: string }[] = [
   { value: "auto", label: "Auto" },
   { value: "camioneta", label: "Camioneta" },
@@ -52,6 +62,29 @@ const CURRENCIES: { value: Currency; label: string }[] = [
 ];
 
 const DOOR_TYPES: VehicleType[] = ["auto", "camioneta"];
+const DOOR_OPTIONS = [2, 3, 4, 5];
+
+const FUEL_OPTIONS = ["Nafta", "Diésel", "GNC", "Nafta/GNC", "Eléctrico", "Híbrido"];
+const TRANSMISSION_OPTIONS = ["Manual", "Automática", "CVT", "Automática secuencial"];
+const COLOR_PALETTE = [
+  "Blanco",
+  "Negro",
+  "Gris",
+  "Gris Platino",
+  "Gris Oscuro",
+  "Plata",
+  "Rojo",
+  "Azul",
+  "Verde",
+  "Amarillo",
+  "Naranja",
+  "Beige",
+  "Marrón",
+  "Negro Mate",
+];
+
+const currentYear = new Date().getFullYear();
+const YEAR_OPTIONS = Array.from({ length: currentYear - 1969 }, (_, i) => currentYear + 1 - i);
 
 const DEFAULT_HIGHLIGHTS = [
   "Motor y caja verificados en banco",
@@ -65,7 +98,7 @@ function emptyValues(): VehicleFormValues {
     brand: "",
     model: "",
     version: "",
-    year: new Date().getFullYear(),
+    year: currentYear,
     price: 0,
     currency: "USD",
     km: 0,
@@ -85,11 +118,15 @@ export function VehicleForm({
   initial,
   onSubmit,
   submitLabel,
+  suggestionSource = [],
 }: {
   initial?: StoredVehicle;
   onSubmit: (values: VehicleFormValues) => Promise<void>;
   submitLabel: string;
+  /** Resto de los vehículos ya cargados, para sugerir marca/modelo/color. */
+  suggestionSource?: VehicleSuggestionSource[];
 }) {
+  const { contact } = useSiteContent();
   const [values, setValues] = useState<VehicleFormValues>(() =>
     initial
       ? {
@@ -122,6 +159,30 @@ export function VehicleForm({
   function set<K extends keyof VehicleFormValues>(key: K, value: VehicleFormValues[K]) {
     setValues((v) => ({ ...v, [key]: value }));
   }
+
+  const locationOptions = useMemo(
+    () => contact.zones.map((z) => z.title),
+    [contact.zones],
+  );
+
+  const brandOptions = useMemo(
+    () =>
+      suggestionSource.filter((v) => v.type === values.type).map((v) => v.brand),
+    [suggestionSource, values.type],
+  );
+
+  const modelOptions = useMemo(
+    () =>
+      suggestionSource
+        .filter((v) => v.brand.toLowerCase() === values.brand.trim().toLowerCase())
+        .map((v) => v.model),
+    [suggestionSource, values.brand],
+  );
+
+  const colorOptions = useMemo(
+    () => [...COLOR_PALETTE, ...suggestionSource.map((v) => v.color)],
+    [suggestionSource],
+  );
 
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
@@ -196,30 +257,49 @@ export function VehicleForm({
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
-            <Label>Ubicación</Label>
-            <Input value={values.location} onChange={(e) => set("location", e.target.value)} required />
-          </div>
-          <div className="space-y-2">
-            <Label>Marca</Label>
-            <Input value={values.brand} onChange={(e) => set("brand", e.target.value)} required />
-          </div>
-          <div className="space-y-2">
-            <Label>Modelo</Label>
-            <Input value={values.model} onChange={(e) => set("model", e.target.value)} required />
-          </div>
+          <ComboboxField
+            label="Ubicación"
+            value={values.location}
+            onChange={(v) => set("location", v)}
+            options={locationOptions}
+            placeholder="Zona donde está el vehículo"
+            required
+          />
+          <ComboboxField
+            label="Marca"
+            value={values.brand}
+            onChange={(v) => set("brand", v)}
+            options={brandOptions}
+            required
+          />
+          <ComboboxField
+            label="Modelo"
+            value={values.model}
+            onChange={(v) => set("model", v)}
+            options={modelOptions}
+            required
+          />
           <div className="space-y-2 sm:col-span-2">
             <Label>Versión</Label>
             <Input value={values.version} onChange={(e) => set("version", e.target.value)} required />
           </div>
           <div className="space-y-2">
             <Label>Año</Label>
-            <Input
-              type="number"
-              value={values.year}
-              onChange={(e) => set("year", Number(e.target.value))}
-              required
-            />
+            <Select
+              value={String(values.year)}
+              onValueChange={(v) => set("year", Number(v))}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {YEAR_OPTIONS.map((y) => (
+                  <SelectItem key={y} value={String(y)}>
+                    {y}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label>Precio</Label>
@@ -254,22 +334,27 @@ export function VehicleForm({
               required
             />
           </div>
-          <div className="space-y-2">
-            <Label>Color</Label>
-            <Input value={values.color} onChange={(e) => set("color", e.target.value)} required />
-          </div>
-          <div className="space-y-2">
-            <Label>Combustible</Label>
-            <Input value={values.fuel} onChange={(e) => set("fuel", e.target.value)} required />
-          </div>
-          <div className="space-y-2">
-            <Label>Transmisión</Label>
-            <Input
-              value={values.transmission}
-              onChange={(e) => set("transmission", e.target.value)}
-              required
-            />
-          </div>
+          <ComboboxField
+            label="Color"
+            value={values.color}
+            onChange={(v) => set("color", v)}
+            options={colorOptions}
+            required
+          />
+          <ComboboxField
+            label="Combustible"
+            value={values.fuel}
+            onChange={(v) => set("fuel", v)}
+            options={FUEL_OPTIONS}
+            required
+          />
+          <ComboboxField
+            label="Transmisión"
+            value={values.transmission}
+            onChange={(v) => set("transmission", v)}
+            options={TRANSMISSION_OPTIONS}
+            required
+          />
           <div className="space-y-2">
             <Label>Motor</Label>
             <Input value={values.engine} onChange={(e) => set("engine", e.target.value)} required />
@@ -277,11 +362,22 @@ export function VehicleForm({
           {DOOR_TYPES.includes(values.type) ? (
             <div className="space-y-2">
               <Label>Puertas</Label>
-              <Input
-                type="number"
-                value={values.doors ?? ""}
-                onChange={(e) => set("doors", e.target.value ? Number(e.target.value) : undefined)}
-              />
+              <Select
+                value={values.doors ? String(values.doors) : "none"}
+                onValueChange={(v) => set("doors", v === "none" ? undefined : Number(v))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sin especificar" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Sin especificar</SelectItem>
+                  {DOOR_OPTIONS.map((d) => (
+                    <SelectItem key={d} value={String(d)}>
+                      {d}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           ) : null}
         </div>
