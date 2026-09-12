@@ -1,15 +1,11 @@
 // Server-only. Persiste el contenido editable del sitio (textos de Home,
-// Gestoría, Seguros, financiación, datos de contacto y configuración) en un
-// archivo JSON local (data/site-content.json), con el mismo patrón que
-// vehicle-store.server.ts. Se siembra una sola vez con los textos actuales
-// del sitio la primera vez que se lee.
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+// Gestoría, Seguros, financiación, datos de contacto y configuración) en
+// Supabase (tabla `site_content`, una sola fila "singleton"), vía el
+// cliente admin que bypassa RLS. Se siembra una sola vez con los textos
+// actuales del sitio la primera vez que se lee.
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-// process.cwd() (no una ruta relativa al archivo) — así el JSON queda al
-// lado del proyecto y no dentro de .output/, que se borra en cada build.
-const DATA_DIR = join(process.cwd(), "data");
-const STORE_PATH = join(DATA_DIR, "site-content.json");
+const ROW_ID = "singleton";
 
 export type ListItem = { title: string; text: string };
 export type CoverageItem = { name: string; items: string[] };
@@ -159,38 +155,48 @@ const DEFAULT_CONTENT: SiteContent = {
   },
 };
 
-async function ensureStore(): Promise<SiteContent> {
-  try {
-    const raw = await readFile(STORE_PATH, "utf-8");
-    const stored = JSON.parse(raw) as Partial<SiteContent>;
-    // Merge sobre el default para que una versión vieja del archivo (de antes
-    // de agregar una sección nueva) no rompa el sitio: falta = valor de fábrica.
-    return {
-      contact: { ...DEFAULT_CONTENT.contact, ...stored.contact },
-      home: { ...DEFAULT_CONTENT.home, ...stored.home },
-      gestoria: { ...DEFAULT_CONTENT.gestoria, ...stored.gestoria },
-      seguros: { ...DEFAULT_CONTENT.seguros, ...stored.seguros },
-      financing: { ...DEFAULT_CONTENT.financing, ...stored.financing },
-      settings: { ...DEFAULT_CONTENT.settings, ...stored.settings },
-    };
-  } catch {
-    await mkdir(DATA_DIR, { recursive: true });
-    await writeFile(STORE_PATH, JSON.stringify(DEFAULT_CONTENT, null, 2), "utf-8");
+async function ensureRow(): Promise<SiteContent> {
+  const { data, error } = await supabaseAdmin
+    .from("site_content")
+    .select("data")
+    .eq("id", ROW_ID)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+
+  if (!data) {
+    const { error: insertError } = await supabaseAdmin
+      .from("site_content")
+      .insert({ id: ROW_ID, data: DEFAULT_CONTENT });
+    if (insertError) throw new Error(insertError.message);
     return DEFAULT_CONTENT;
   }
+
+  // Merge sobre el default para que una fila vieja (de antes de agregar una
+  // sección nueva) no rompa el sitio: lo que falta = valor de fábrica.
+  const stored = data.data as Partial<SiteContent>;
+  return {
+    contact: { ...DEFAULT_CONTENT.contact, ...stored.contact },
+    home: { ...DEFAULT_CONTENT.home, ...stored.home },
+    gestoria: { ...DEFAULT_CONTENT.gestoria, ...stored.gestoria },
+    seguros: { ...DEFAULT_CONTENT.seguros, ...stored.seguros },
+    financing: { ...DEFAULT_CONTENT.financing, ...stored.financing },
+    settings: { ...DEFAULT_CONTENT.settings, ...stored.settings },
+  };
 }
 
 export async function getSiteContent(): Promise<SiteContent> {
-  return ensureStore();
+  return ensureRow();
 }
 
 export async function updateSiteContentSection<K extends keyof SiteContent>(
   section: K,
   value: SiteContent[K],
 ): Promise<SiteContent> {
-  const current = await ensureStore();
+  const current = await ensureRow();
   const next: SiteContent = { ...current, [section]: value };
-  await mkdir(DATA_DIR, { recursive: true });
-  await writeFile(STORE_PATH, JSON.stringify(next, null, 2), "utf-8");
+  const { error } = await supabaseAdmin
+    .from("site_content")
+    .upsert({ id: ROW_ID, data: next, updated_at: new Date().toISOString() });
+  if (error) throw new Error(error.message);
   return next;
 }

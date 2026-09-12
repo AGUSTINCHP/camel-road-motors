@@ -14,7 +14,96 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      vehicles: {
+        Row: {
+          id: string
+          slug: string
+          type: string
+          brand: string
+          model: string
+          version: string
+          year: number
+          price: number
+          currency: string
+          km: number
+          fuel: string
+          transmission: string
+          engine: string
+          color: string
+          location: string
+          doors: number | null
+          images: Json
+          highlights: Json
+          featured: boolean
+          published: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          slug: string
+          type: string
+          brand: string
+          model: string
+          version: string
+          year: number
+          price: number
+          currency: string
+          km: number
+          fuel: string
+          transmission: string
+          engine: string
+          color: string
+          location: string
+          doors?: number | null | undefined
+          images?: Json
+          highlights?: Json
+          featured?: boolean
+          published?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          slug?: string
+          type?: string
+          brand?: string
+          model?: string
+          version?: string
+          year?: number
+          price?: number
+          currency?: string
+          km?: number
+          fuel?: string
+          transmission?: string
+          engine?: string
+          color?: string
+          location?: string
+          doors?: number | null | undefined
+          images?: Json
+          highlights?: Json
+          featured?: boolean
+          published?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
+      site_content: {
+        Row: {
+          id: string
+          data: Json
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          data: Json
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          data?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

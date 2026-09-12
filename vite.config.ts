@@ -12,10 +12,4 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
-  // El sitio persiste el stock, el contenido y las fotos subidas en el
-  // disco del servidor (data/, public/uploads/) — necesita un proceso Node
-  // de larga duración con disco persistente (Railway, Render, Fly.io, un
-  // VPS), no una plataforma "edge"/serverless sin filesystem. Por eso el
-  // build apunta a Node en vez del default de Cloudflare.
-  nitro: { preset: "node-server" },
 });
