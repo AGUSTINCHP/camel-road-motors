@@ -27,6 +27,15 @@ export function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
         <span className="absolute left-0 top-0 bg-background/90 px-3 py-2 text-[0.6rem] font-semibold uppercase tracking-[0.18em]">
           {TYPE_LABEL[vehicle.type]}
         </span>
+        {vehicle.featured ? (
+          <span className="absolute right-0 top-0 bg-camel px-3 py-2 text-[0.6rem] font-semibold uppercase tracking-[0.18em] text-accent-foreground">
+            Destacado
+          </span>
+        ) : vehicle.addedDaysAgo <= 7 ? (
+          <span className="absolute right-0 top-0 bg-ink px-3 py-2 text-[0.6rem] font-semibold uppercase tracking-[0.18em] text-primary-foreground">
+            Recién llegado
+          </span>
+        ) : null}
       </Link>
 
       <div className="flex flex-1 flex-col p-5">

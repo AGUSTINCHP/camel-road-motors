@@ -8,6 +8,9 @@ import { CoverageZones } from "@/components/CoverageZones";
 import { TradeInForm } from "@/components/TradeInForm";
 import { fetchPublishedVehicles } from "@/lib/vehicles.server";
 import { useSiteContent } from "@/lib/site-content-context";
+import { TYPE_LABEL, type VehicleType } from "@/data/vehicles";
+
+const QUICK_TYPES: VehicleType[] = ["auto", "camioneta", "moto", "cuatriciclo", "lancha"];
 
 export const Route = createFileRoute("/")({
   loader: async () => {
@@ -49,6 +52,11 @@ const PILLAR_META = [
 function Home() {
   const { vehicles, featuredVehicles, newestVehicles } = Route.useLoaderData();
   const { home } = useSiteContent();
+  const typeCounts = vehicles.reduce<Partial<Record<VehicleType, number>>>((acc, v) => {
+    acc[v.type] = (acc[v.type] ?? 0) + 1;
+    return acc;
+  }, {});
+  const availableTypes = QUICK_TYPES.filter((t) => (typeCounts[t] ?? 0) > 0);
   return (
     <>
       <section className="relative flex min-h-[86vh] items-end overflow-hidden">
@@ -77,6 +85,20 @@ function Home() {
               Ver el catálogo <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
+          {availableTypes.length > 1 ? (
+            <div className="mt-8 flex flex-wrap gap-2">
+              {availableTypes.map((t) => (
+                <Link
+                  key={t}
+                  to="/catalogo"
+                  search={{ tipo: t }}
+                  className="border border-primary-foreground/30 px-4 py-2 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-primary-foreground/90 backdrop-blur-sm transition hover:border-camel hover:bg-camel hover:text-accent-foreground"
+                >
+                  {TYPE_LABEL[t]} <span className="opacity-70">({typeCounts[t]})</span>
+                </Link>
+              ))}
+            </div>
+          ) : null}
         </div>
       </section>
 
