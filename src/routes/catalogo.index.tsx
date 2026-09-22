@@ -4,11 +4,28 @@ import { SlidersHorizontal, X } from "lucide-react";
 import { FilterPanel, type Filters } from "@/components/FilterPanel";
 import { VehicleCard } from "@/components/VehicleCard";
 import { NotifyForm } from "@/components/NotifyForm";
-import { type VehicleType } from "@/data/vehicles";
+import { TYPE_LABEL, type VehicleType } from "@/data/vehicles";
 import { fetchPublishedVehicles } from "@/lib/vehicles.server";
 import { fetchSiteContent } from "@/lib/site-content.server";
 import { toUsdEquivalent } from "@/lib/currency";
 import { useSiteContent } from "@/lib/site-content-context";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+type SortOption = "relevancia" | "precio_asc" | "precio_desc" | "anio_nuevo" | "km_asc";
+
+const SORT_LABEL: Record<SortOption, string> = {
+  relevancia: "Relevancia",
+  precio_asc: "Menor precio",
+  precio_desc: "Mayor precio",
+  anio_nuevo: "Año más nuevo",
+  km_asc: "Menor kilometraje",
+};
 
 type CatalogSearch = { marca?: string; tipo?: VehicleType };
 
@@ -77,6 +94,7 @@ function Catalogo() {
     brand: search.marca ?? "",
   });
   const [drawer, setDrawer] = useState(false);
+  const [sort, setSort] = useState<SortOption>("relevancia");
 
   useEffect(() => {
     setFilters((f) => ({ ...f, type: search.tipo ?? "todos", brand: search.marca ?? "" }));
@@ -99,18 +117,49 @@ function Catalogo() {
     [byType, filters.brand],
   );
 
-  const results = useMemo(
-    () =>
-      byType.filter(
-        (v) =>
-          (!filters.brand || v.brand === filters.brand) &&
-          (!filters.model || v.model === filters.model) &&
-          toUsdEquivalent(v.price, v.currency, settings.arsPerUsd) <= filters.maxPrice &&
-          v.km <= filters.maxKm &&
-          v.year >= filters.minYear,
-      ),
-    [byType, filters, settings.arsPerUsd],
-  );
+  const results = useMemo(() => {
+    const filtered = byType.filter(
+      (v) =>
+        (!filters.brand || v.brand === filters.brand) &&
+        (!filters.model || v.model === filters.model) &&
+        toUsdEquivalent(v.price, v.currency, settings.arsPerUsd) <= filters.maxPrice &&
+        v.km <= filters.maxKm &&
+        v.year >= filters.minYear,
+    );
+    const withUsd = filtered.map((v) => ({
+      v,
+      usd: toUsdEquivalent(v.price, v.currency, settings.arsPerUsd),
+    }));
+    switch (sort) {
+      case "precio_asc":
+        withUsd.sort((a, b) => a.usd - b.usd);
+        break;
+      case "precio_desc":
+        withUsd.sort((a, b) => b.usd - a.usd);
+        break;
+      case "anio_nuevo":
+        withUsd.sort((a, b) => b.v.year - a.v.year);
+        break;
+      case "km_asc":
+        withUsd.sort((a, b) => a.v.km - b.v.km);
+        break;
+      default:
+        break;
+    }
+    return withUsd.map((x) => x.v);
+  }, [byType, filters, settings.arsPerUsd, sort]);
+
+  const activeChips: { label: string; onRemove: () => void }[] = [
+    ...(filters.type !== "todos"
+      ? [{ label: TYPE_LABEL[filters.type], onRemove: () => setFilters({ ...filters, type: "todos" }) }]
+      : []),
+    ...(filters.brand
+      ? [{ label: filters.brand, onRemove: () => setFilters({ ...filters, brand: "", model: "" }) }]
+      : []),
+    ...(filters.model
+      ? [{ label: filters.model, onRemove: () => setFilters({ ...filters, model: "" }) }]
+      : []),
+  ];
 
   const panel = (
     <FilterPanel
@@ -144,6 +193,36 @@ function Catalogo() {
           >
             <SlidersHorizontal className="h-4 w-4" /> Filtrar
           </button>
+
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+            <div className="flex flex-wrap gap-2">
+              {activeChips.map((chip) => (
+                <button
+                  key={chip.label}
+                  type="button"
+                  onClick={chip.onRemove}
+                  className="flex items-center gap-1.5 border border-camel bg-camel-soft/40 px-3 py-1.5 text-xs uppercase tracking-[0.1em] text-ink transition hover:border-destructive hover:text-destructive"
+                >
+                  {chip.label} <X className="h-3 w-3" />
+                </button>
+              ))}
+            </div>
+            <label className="ml-auto flex shrink-0 items-center gap-2">
+              <span className="eyebrow text-muted-foreground">Ordenar por</span>
+              <Select value={sort} onValueChange={(v) => setSort(v as SortOption)}>
+                <SelectTrigger className="w-44">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(Object.keys(SORT_LABEL) as SortOption[]).map((opt) => (
+                    <SelectItem key={opt} value={opt}>
+                      {SORT_LABEL[opt]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </label>
+          </div>
 
           {results.length > 0 ? (
             <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { Check, Heart, Landmark } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Expand, Heart, Landmark } from "lucide-react";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { NotifyForm } from "@/components/NotifyForm";
 import { TYPE_LABEL } from "@/data/vehicles";
@@ -9,6 +9,7 @@ import { formatKm, formatMoney } from "@/lib/format";
 import { useCompare } from "@/lib/compare";
 import { useSiteContent } from "@/lib/site-content-context";
 import { cn } from "@/lib/utils";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/catalogo/$slug")({
   loader: async ({ params }) => {
@@ -60,7 +61,12 @@ function VehicleDetail() {
   const { vehicle } = Route.useLoaderData();
   const { financing } = useSiteContent();
   const [active, setActive] = useState(0);
+  const [lightbox, setLightbox] = useState(false);
   const compare = useCompare();
+
+  function step(delta: number) {
+    setActive((i) => (i + delta + vehicle.images.length) % vehicle.images.length);
+  }
   const selected = compare.isSelected(vehicle.id);
 
   const specs: [string, string][] = [
@@ -85,15 +91,22 @@ function VehicleDetail() {
 
       <div className="mt-8 grid gap-12 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
         <div>
-          <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
+          <button
+            type="button"
+            onClick={() => setLightbox(true)}
+            className="group relative block aspect-[4/3] w-full overflow-hidden bg-muted"
+          >
             <img
               src={vehicle.images[active]}
               alt={`${vehicle.brand} ${vehicle.model} ${vehicle.year}`}
               width={1200}
               height={800}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
             />
-          </div>
+            <span className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-ink/80 px-3 py-1.5 text-xs text-primary-foreground">
+              <Expand className="h-3.5 w-3.5" /> {active + 1}/{vehicle.images.length}
+            </span>
+          </button>
           <div className="mt-3 flex gap-3">
             {vehicle.images.map((img, i) => (
               <button
@@ -201,6 +214,44 @@ function VehicleDetail() {
       <div className="mt-20">
         <NotifyForm prefill={`Algo similar a ${vehicle.brand} ${vehicle.model}`} />
       </div>
+
+      <Dialog open={lightbox} onOpenChange={setLightbox}>
+        <DialogContent className="max-w-4xl border-none bg-transparent p-0 shadow-none [&>button]:text-white">
+          <DialogTitle className="sr-only">
+            {vehicle.brand} {vehicle.model} — foto {active + 1} de {vehicle.images.length}
+          </DialogTitle>
+          <div className="relative">
+            <img
+              src={vehicle.images[active]}
+              alt={`${vehicle.brand} ${vehicle.model} ${vehicle.year}`}
+              className="max-h-[85vh] w-full object-contain"
+            />
+            {vehicle.images.length > 1 ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => step(-1)}
+                  aria-label="Foto anterior"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-ink/70 p-2 text-primary-foreground transition hover:bg-camel"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => step(1)}
+                  aria-label="Foto siguiente"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-ink/70 p-2 text-primary-foreground transition hover:bg-camel"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+                <span className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-ink/80 px-3 py-1 text-xs text-primary-foreground">
+                  {active + 1}/{vehicle.images.length}
+                </span>
+              </>
+            ) : null}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
