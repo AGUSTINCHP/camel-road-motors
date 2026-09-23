@@ -35,7 +35,9 @@ function ImportarVehiculos() {
     errors: { row: number; message: string }[];
   } | null>(null);
   const [error, setError] = useState("");
-  const incompleteCount = rows.filter((r) => !r.brand || !r.model).length;
+  const incompleteRows = rows
+    .map((r, i) => ({ row: i + 1, r }))
+    .filter(({ r }) => !r.brand || !r.model);
 
   async function handleFile(file: File | null) {
     if (!file) return;
@@ -125,10 +127,18 @@ function ImportarVehiculos() {
                 Se leyeron <strong>{rows.length}</strong> vehículos
                 {skipped > 0 ? ` (se ignoraron ${skipped} filas vacías o sin datos)` : ""}.
               </p>
-              {incompleteCount > 0 ? (
+              {incompleteRows.length > 0 ? (
                 <p className="text-sm text-destructive">
-                  {incompleteCount} fila(s) marcada(s) en rojo no tienen marca o modelo — se van a
-                  rechazar al importar. Revisalas en la planilla antes de continuar.
+                  Sin marca o modelo, se van a rechazar al importar —{" "}
+                  {incompleteRows
+                    .slice(0, 10)
+                    .map(
+                      ({ row, r }) =>
+                        `fila ${row}${r.model || r.version ? ` (${r.model || r.version})` : ""}`,
+                    )
+                    .join(", ")}
+                  {incompleteRows.length > 10 ? ` y ${incompleteRows.length - 10} más` : ""}.
+                  Revisalas en la planilla antes de continuar.
                 </p>
               ) : null}
               <div className="max-h-80 overflow-auto border border-border">
