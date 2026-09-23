@@ -35,6 +35,7 @@ function ImportarVehiculos() {
     errors: { row: number; message: string }[];
   } | null>(null);
   const [error, setError] = useState("");
+  const incompleteCount = rows.filter((r) => !r.brand || !r.model).length;
 
   async function handleFile(file: File | null) {
     if (!file) return;
@@ -124,10 +125,17 @@ function ImportarVehiculos() {
                 Se leyeron <strong>{rows.length}</strong> vehículos
                 {skipped > 0 ? ` (se ignoraron ${skipped} filas vacías o sin datos)` : ""}.
               </p>
+              {incompleteCount > 0 ? (
+                <p className="text-sm text-destructive">
+                  {incompleteCount} fila(s) marcada(s) en rojo no tienen marca o modelo — se van a
+                  rechazar al importar. Revisalas en la planilla antes de continuar.
+                </p>
+              ) : null}
               <div className="max-h-80 overflow-auto border border-border">
                 <table className="w-full text-left text-sm">
                   <thead className="sticky top-0 bg-muted/60 text-xs uppercase tracking-wide">
                     <tr>
+                      <th className="px-3 py-2">Fila</th>
                       <th className="px-3 py-2">Marca</th>
                       <th className="px-3 py-2">Modelo</th>
                       <th className="px-3 py-2">Año</th>
@@ -137,20 +145,29 @@ function ImportarVehiculos() {
                     </tr>
                   </thead>
                   <tbody>
-                    {rows.map((r, i) => (
-                      <tr key={i} className="border-t border-border">
-                        <td className="px-3 py-2">{r.brand}</td>
-                        <td className="px-3 py-2">{r.model}</td>
-                        <td className="px-3 py-2">{r.year}</td>
-                        <td className="px-3 py-2">
-                          {r.currency} {r.price}
-                        </td>
-                        <td className="px-3 py-2">
-                          {r.cost ? `${r.costCurrency} ${r.cost}` : "—"}
-                        </td>
-                        <td className="px-3 py-2">{r.location || "—"}</td>
-                      </tr>
-                    ))}
+                    {rows.map((r, i) => {
+                      const incomplete = !r.brand || !r.model;
+                      return (
+                        <tr
+                          key={i}
+                          className={
+                            "border-t border-border" + (incomplete ? " bg-destructive/10" : "")
+                          }
+                        >
+                          <td className="px-3 py-2 text-muted-foreground">{i + 1}</td>
+                          <td className="px-3 py-2">{r.brand || "—"}</td>
+                          <td className="px-3 py-2">{r.model || "—"}</td>
+                          <td className="px-3 py-2">{r.year}</td>
+                          <td className="px-3 py-2">
+                            {r.currency} {r.price}
+                          </td>
+                          <td className="px-3 py-2">
+                            {r.cost ? `${r.costCurrency} ${r.cost}` : "—"}
+                          </td>
+                          <td className="px-3 py-2">{r.location || "—"}</td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

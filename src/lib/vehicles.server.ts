@@ -153,16 +153,23 @@ export const adminBulkImportVehicles = createServerFn({ method: "POST" })
     let created = 0;
     const errors: { row: number; message: string }[] = [];
     for (let i = 0; i < rows.length; i++) {
-      const parsed = bulkRowSchema.safeParse(rows[i]);
+      const raw = rows[i];
+      const parsed = bulkRowSchema.safeParse(raw);
       if (!parsed.success) {
         const issue = parsed.error.issues[0];
         const field = issue?.path.join(".");
-        const message = issue
+        const detail = issue
           ? field
             ? `${field}: ${issue.message}`
             : issue.message
           : "Fila inválida";
-        errors.push({ row: i + 1, message });
+        // Modelo/versión de la fila (aunque haya fallado la validación) para
+        // que se pueda ubicar en la planilla sin tener que contar filas.
+        const rawObj = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+        const hint = [rawObj["model"], rawObj["version"]]
+          .filter((v) => typeof v === "string" && v.trim())
+          .join(" ");
+        errors.push({ row: i + 1, message: hint ? `${detail} (fila: ${hint})` : detail });
         continue;
       }
       try {
