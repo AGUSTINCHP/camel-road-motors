@@ -12,7 +12,12 @@ import {
   type StoredVehicle,
   type VehicleInput,
 } from "@/lib/vehicle-store.server";
-import { isAdminAuthenticated, loginAdmin, logoutAdmin, requireAdmin } from "@/lib/admin-session.server";
+import {
+  isAdminAuthenticated,
+  loginAdmin,
+  logoutAdmin,
+  requireAdmin,
+} from "@/lib/admin-session.server";
 
 // ---------- Públicas (catálogo) ----------
 
@@ -74,6 +79,8 @@ const vehicleInputSchema = z.object({
   highlights: z.array(z.string()),
   featured: z.boolean(),
   published: z.boolean(),
+  cost: z.coerce.number().min(0).optional(),
+  costCurrency: z.enum(["USD", "ARS"]).optional(),
 });
 
 export const adminListVehicles = createServerFn({ method: "GET" }).handler(async () => {
@@ -115,23 +122,28 @@ export const adminDeleteVehicle = createServerFn({ method: "POST" })
 // llevar archivos), así que se crean siempre como borrador (sin publicar)
 // para que no aparezcan en el catálogo hasta que alguien les suba fotos.
 
+// Solo marca y modelo son realmente indispensables — el resto de los datos
+// de una planilla suele venir incompleto (no siempre se carga motor,
+// versión, etc. a mano), así que se aceptan vacíos en vez de rechazar la fila.
 const bulkRowSchema = z.object({
   type: z.enum(["auto", "camioneta", "moto", "cuatriciclo", "lancha"]),
-  brand: z.string().min(1),
-  model: z.string().min(1),
-  version: z.string().min(1),
+  brand: z.string().min(1, "Falta la marca"),
+  model: z.string().min(1, "Falta el modelo"),
+  version: z.string(),
   year: z.coerce.number().int().min(1970).max(2100),
   price: z.coerce.number().min(0),
   currency: z.enum(["USD", "ARS"]),
   km: z.coerce.number().min(0),
-  fuel: z.string().min(1),
-  transmission: z.string().min(1),
-  engine: z.string().min(1),
-  color: z.string().min(1),
-  location: z.string().min(1),
+  fuel: z.string(),
+  transmission: z.string(),
+  engine: z.string(),
+  color: z.string(),
+  location: z.string(),
   doors: z.coerce.number().optional(),
   highlights: z.array(z.string()),
   featured: z.boolean(),
+  cost: z.coerce.number().min(0).optional(),
+  costCurrency: z.enum(["USD", "ARS"]).optional(),
 });
 
 export const adminBulkImportVehicles = createServerFn({ method: "POST" })
@@ -143,7 +155,14 @@ export const adminBulkImportVehicles = createServerFn({ method: "POST" })
     for (let i = 0; i < rows.length; i++) {
       const parsed = bulkRowSchema.safeParse(rows[i]);
       if (!parsed.success) {
-        errors.push({ row: i + 1, message: parsed.error.issues[0]?.message ?? "Fila inválida" });
+        const issue = parsed.error.issues[0];
+        const field = issue?.path.join(".");
+        const message = issue
+          ? field
+            ? `${field}: ${issue.message}`
+            : issue.message
+          : "Fila inválida";
+        errors.push({ row: i + 1, message });
         continue;
       }
       try {

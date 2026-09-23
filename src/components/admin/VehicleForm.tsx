@@ -1,9 +1,10 @@
 import { useMemo, useRef, useState, type FormEvent } from "react";
 import { ArrowLeft, ArrowRight, Loader2, Star, Upload, X } from "lucide-react";
-import type { StoredVehicle } from "@/lib/vehicle-store.server";
+import type { AdminStoredVehicle } from "@/lib/vehicle-store.server";
 import type { Currency, VehicleType } from "@/data/vehicles";
 import { uploadVehiclePhoto } from "@/lib/upload.server";
 import { compressImage } from "@/lib/image-compress";
+import { formatMargin } from "@/lib/currency";
 import { useSiteContent } from "@/lib/site-content-context";
 import { RetryImage } from "@/components/admin/RetryImage";
 import { ComboboxField } from "@/components/admin/ComboboxField";
@@ -39,6 +40,8 @@ export type VehicleFormValues = {
   highlights: string[];
   featured: boolean;
   published: boolean;
+  cost?: number | undefined;
+  costCurrency?: Currency | undefined;
 };
 
 /** Datos mínimos del resto del stock, para armar los desplegables de marca/modelo/color a partir de lo que ya cargaste (en vez de un catálogo fijo). */
@@ -112,6 +115,8 @@ function emptyValues(): VehicleFormValues {
     highlights: [...DEFAULT_HIGHLIGHTS],
     featured: false,
     published: true,
+    cost: undefined,
+    costCurrency: undefined,
   };
 }
 
@@ -121,13 +126,13 @@ export function VehicleForm({
   submitLabel,
   suggestionSource = [],
 }: {
-  initial?: StoredVehicle;
+  initial?: AdminStoredVehicle;
   onSubmit: (values: VehicleFormValues) => Promise<void>;
   submitLabel: string;
   /** Resto de los vehículos ya cargados, para sugerir marca/modelo/color. */
   suggestionSource?: VehicleSuggestionSource[];
 }) {
-  const { contact } = useSiteContent();
+  const { contact, settings } = useSiteContent();
   const [values, setValues] = useState<VehicleFormValues>(() =>
     initial
       ? {
@@ -149,6 +154,8 @@ export function VehicleForm({
           highlights: initial.highlights,
           featured: initial.featured,
           published: initial.published,
+          cost: initial.cost,
+          costCurrency: initial.costCurrency,
         }
       : emptyValues(),
   );
@@ -391,6 +398,62 @@ export function VehicleForm({
             </div>
           ) : null}
         </div>
+      </section>
+
+      <section className="space-y-4 border border-dashed border-border p-4">
+        <div>
+          <h2 className="text-lg font-semibold">Costo</h2>
+          <p className="text-xs text-muted-foreground">
+            Uso interno para calcular margen — nunca se muestra en el sitio público. Podés dejarlo
+            vacío si no lo cargás.
+          </p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label>Costo de adquisición</Label>
+            <Input
+              type="number"
+              value={values.cost ?? ""}
+              onChange={(e) =>
+                set("cost", e.target.value === "" ? undefined : Number(e.target.value))
+              }
+              placeholder="Opcional"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Moneda del costo</Label>
+            <Select
+              value={values.costCurrency ?? "none"}
+              onValueChange={(v) => set("costCurrency", v === "none" ? undefined : (v as Currency))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Misma que el precio" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Misma que el precio</SelectItem>
+                {CURRENCIES.map((c) => (
+                  <SelectItem key={c.value} value={c.value}>
+                    {c.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        {values.cost ? (
+          <p className="text-sm text-muted-foreground">
+            Margen estimado:{" "}
+            <strong className="text-foreground">
+              {formatMargin(
+                values.price,
+                values.currency,
+                values.cost,
+                values.costCurrency ?? values.currency,
+                settings.arsPerUsd,
+              )}
+            </strong>
+          </p>
+        ) : null}
       </section>
 
       <section className="space-y-4">

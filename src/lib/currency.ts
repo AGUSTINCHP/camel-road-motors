@@ -1,4 +1,5 @@
 import type { Currency } from "@/data/vehicles";
+import { formatPrice } from "@/lib/format";
 
 export type { Currency };
 
@@ -13,4 +14,19 @@ export type { Currency };
  */
 export function toUsdEquivalent(price: number, currency: Currency, arsPerUsd: number): number {
   return currency === "ARS" ? price / arsPerUsd : price;
+}
+
+/** Precio y costo pueden estar en monedas distintas — se comparan en dólares de referencia. */
+export function formatMargin(
+  price: number,
+  priceCurrency: Currency,
+  cost: number,
+  costCurrency: Currency,
+  arsPerUsd: number,
+): string {
+  const priceUsd = toUsdEquivalent(price, priceCurrency, arsPerUsd);
+  const costUsd = toUsdEquivalent(cost, costCurrency, arsPerUsd);
+  const margin = priceUsd - costUsd;
+  const pct = costUsd > 0 ? Math.round((margin / costUsd) * 100) : 0;
+  return `${formatPrice(margin)} (${pct >= 0 ? "+" : ""}${pct}% sobre el costo)`;
 }

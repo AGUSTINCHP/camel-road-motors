@@ -37,6 +37,8 @@ export type Database = {
           featured: boolean
           published: boolean
           created_at: string
+          cost: number | null
+          cost_currency: string | null
         }
         Insert: {
           id?: string
@@ -60,6 +62,8 @@ export type Database = {
           featured?: boolean
           published?: boolean
           created_at?: string
+          cost?: number | null | undefined
+          cost_currency?: string | null | undefined
         }
         Update: {
           id?: string
@@ -83,6 +87,8 @@ export type Database = {
           featured?: boolean
           published?: boolean
           created_at?: string
+          cost?: number | null | undefined
+          cost_currency?: string | null | undefined
         }
         Relationships: []
       }

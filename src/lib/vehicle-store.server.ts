@@ -27,9 +27,18 @@ export type VehicleInput = {
   highlights: string[];
   featured: boolean;
   published: boolean;
+  /** Costo de adquisición — uso interno, nunca se expone en el catálogo público. */
+  cost?: number | undefined;
+  costCurrency?: Currency | undefined;
 };
 
 export type StoredVehicle = Vehicle & { published: boolean };
+
+/** Igual que StoredVehicle pero con el costo interno — solo para las funciones de admin. */
+export type AdminStoredVehicle = StoredVehicle & {
+  cost?: number | undefined;
+  costCurrency?: Currency | undefined;
+};
 
 const slugify = (value: string) =>
   value
@@ -66,13 +75,22 @@ function rowToVehicle(row: Tables<"vehicles">): StoredVehicle {
   };
 }
 
-export async function listAllVehicles(): Promise<StoredVehicle[]> {
+/** Como rowToVehicle, pero incluye el costo — solo para uso en funciones de admin. */
+function rowToAdminVehicle(row: Tables<"vehicles">): AdminStoredVehicle {
+  return {
+    ...rowToVehicle(row),
+    cost: row.cost ?? undefined,
+    costCurrency: (row.cost_currency as Currency | null) ?? undefined,
+  };
+}
+
+export async function listAllVehicles(): Promise<AdminStoredVehicle[]> {
   const { data, error } = await supabaseAdmin
     .from("vehicles")
     .select("*")
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
-  return (data ?? []).map(rowToVehicle);
+  return (data ?? []).map(rowToAdminVehicle);
 }
 
 export async function listPublishedVehicles(): Promise<StoredVehicle[]> {
@@ -85,10 +103,10 @@ export async function listPublishedVehicles(): Promise<StoredVehicle[]> {
   return (data ?? []).map(rowToVehicle);
 }
 
-export async function getVehicleById(id: string): Promise<StoredVehicle | undefined> {
+export async function getVehicleById(id: string): Promise<AdminStoredVehicle | undefined> {
   const { data, error } = await supabaseAdmin.from("vehicles").select("*").eq("id", id).maybeSingle();
   if (error) throw new Error(error.message);
-  return data ? rowToVehicle(data) : undefined;
+  return data ? rowToAdminVehicle(data) : undefined;
 }
 
 export async function getPublishedVehicleBySlug(
@@ -104,7 +122,7 @@ export async function getPublishedVehicleBySlug(
   return data ? rowToVehicle(data) : undefined;
 }
 
-export async function createVehicle(input: VehicleInput): Promise<StoredVehicle> {
+export async function createVehicle(input: VehicleInput): Promise<AdminStoredVehicle> {
   const baseSlug = slugify(`${input.brand}-${input.model}-${input.version}-${input.year}`);
   const { data: clash } = await supabaseAdmin
     .from("vehicles")
@@ -113,24 +131,35 @@ export async function createVehicle(input: VehicleInput): Promise<StoredVehicle>
     .maybeSingle();
   const slug = clash ? `${baseSlug}-${Math.random().toString(36).slice(2, 6)}` : baseSlug;
 
-  const insert: TablesInsert<"vehicles"> = { ...input, slug };
+  const { cost, costCurrency, ...rest } = input;
+  const insert: TablesInsert<"vehicles"> = {
+    ...rest,
+    slug,
+    cost: cost ?? null,
+    cost_currency: costCurrency ?? null,
+  };
   const { data, error } = await supabaseAdmin.from("vehicles").insert(insert).select().single();
   if (error) throw new Error(error.message);
-  return rowToVehicle(data);
+  return rowToAdminVehicle(data);
 }
 
 export async function updateVehicle(
   id: string,
   patch: Partial<VehicleInput>,
-): Promise<StoredVehicle> {
+): Promise<AdminStoredVehicle> {
+  const { cost, costCurrency, ...rest } = patch;
+  const update: Partial<TablesInsert<"vehicles">> = { ...rest };
+  if ("cost" in patch) update.cost = cost ?? null;
+  if ("costCurrency" in patch) update.cost_currency = costCurrency ?? null;
+
   const { data, error } = await supabaseAdmin
     .from("vehicles")
-    .update(patch)
+    .update(update)
     .eq("id", id)
     .select()
     .single();
   if (error) throw new Error(error.message);
-  return rowToVehicle(data);
+  return rowToAdminVehicle(data);
 }
 
 export async function deleteVehicle(id: string): Promise<void> {

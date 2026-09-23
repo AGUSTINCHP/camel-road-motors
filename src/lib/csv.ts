@@ -51,7 +51,13 @@ export function parseCsv(text: string): string[][] {
 }
 
 function normalizeHeader(s: string): string {
-  return s.normalize("NFD").replace(/[̀-ͯ]/g, "").trim().toLowerCase();
+  return s
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .trim()
+    .toLowerCase()
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ");
 }
 
 const HEADERS = [
@@ -62,6 +68,8 @@ const HEADERS = [
   "anio",
   "precio",
   "moneda",
+  "costo",
+  "moneda costo",
   "km",
   "combustible",
   "transmision",
@@ -79,8 +87,12 @@ export type BulkVehicleRow = {
   model: string;
   version: string;
   year: number;
+  /** Precio al público. */
   price: number;
   currency: string;
+  /** Costo de adquisición — interno, nunca se muestra en el sitio público. */
+  cost?: number | undefined;
+  costCurrency?: string | undefined;
   km: number;
   fuel: string;
   transmission: string;
@@ -136,7 +148,9 @@ export function csvToVehicleRows(text: string): { rows: BulkVehicleRow[]; skippe
 
     const typeRaw = normalizeHeader(get("tipo"));
     const currencyRaw = normalizeHeader(get("moneda"));
+    const costCurrencyRaw = normalizeHeader(get("moneda costo"));
     const highlightsRaw = get("caracteristicas");
+    const costRaw = get("costo");
 
     rows.push({
       type: TYPE_ALIASES[typeRaw] ?? "auto",
@@ -146,6 +160,11 @@ export function csvToVehicleRows(text: string): { rows: BulkVehicleRow[]; skippe
       year: Number(get("anio")) || new Date().getFullYear(),
       price: Number(get("precio").replace(/[^\d.]/g, "")) || 0,
       currency: CURRENCY_ALIASES[currencyRaw] ?? "USD",
+      cost: costRaw ? Number(costRaw.replace(/[^\d.]/g, "")) || undefined : undefined,
+      // Si no aclaran la moneda del costo, se asume la misma que la del precio.
+      costCurrency: costRaw
+        ? (CURRENCY_ALIASES[costCurrencyRaw] ?? CURRENCY_ALIASES[currencyRaw] ?? "USD")
+        : undefined,
       km: Number(get("km").replace(/[^\d]/g, "")) || 0,
       fuel: get("combustible") || "Nafta",
       transmission: get("transmision") || "Manual",
@@ -166,7 +185,7 @@ export function csvToVehicleRows(text: string): { rows: BulkVehicleRow[]; skippe
   return { rows, skipped };
 }
 
-export const CSV_TEMPLATE = `tipo,marca,modelo,version,anio,precio,moneda,km,combustible,transmision,motor,color,ubicacion,puertas,destacado,caracteristicas
-auto,Toyota,Corolla,XEI CVT,2021,18500,USD,42000,Nafta,CVT,1.8,Blanco,Pilar,4,no,Único dueño|Service oficial
-moto,Honda,CB 190R,,2022,3200000,ARS,8000,Nafta,Manual,190cc,Rojo,El Talar,,si,
+export const CSV_TEMPLATE = `tipo,marca,modelo,version,anio,precio,moneda,costo,moneda costo,km,combustible,transmision,motor,color,ubicacion,puertas,destacado,caracteristicas
+auto,Toyota,Corolla,XEI CVT,2021,18500,USD,16000000,ARS,42000,Nafta,CVT,1.8,Blanco,Pilar,4,no,Único dueño|Service oficial
+moto,Honda,CB 190R,,2022,3200000,ARS,2600000,ARS,8000,Nafta,Manual,190cc,Rojo,El Talar,,si,
 `;

@@ -10,7 +10,7 @@ import {
 } from "@/lib/vehicles.server";
 import { TYPE_LABEL, type VehicleType } from "@/data/vehicles";
 import { formatMoney, formatPrice } from "@/lib/format";
-import { toUsdEquivalent } from "@/lib/currency";
+import { toUsdEquivalent, formatMargin } from "@/lib/currency";
 import { useSiteContent } from "@/lib/site-content-context";
 import { ADMIN_HEAD } from "@/lib/admin-head";
 import { Button } from "@/components/ui/button";
@@ -320,6 +320,18 @@ function AdminDashboard() {
             <p className="mt-2 text-sm text-muted-foreground">
               {TYPE_LABEL[v.type]} · {v.year} · {money.format(v.km)} km
             </p>
+            {v.cost ? (
+              <p className="mt-1 text-xs text-muted-foreground">
+                Margen:{" "}
+                {formatMargin(
+                  v.price,
+                  v.currency,
+                  v.cost,
+                  v.costCurrency ?? v.currency,
+                  settings.arsPerUsd,
+                )}
+              </p>
+            ) : null}
             <div className="mt-3 flex items-center justify-between gap-3">
               <p className="font-display text-lg">{formatMoney(v.price, v.currency)}</p>
               <button
@@ -357,6 +369,7 @@ function AdminDashboard() {
               <TableHead>Tipo</TableHead>
               <TableHead>Año</TableHead>
               <TableHead>Precio</TableHead>
+              <TableHead>Margen</TableHead>
               <TableHead>Km</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
@@ -371,6 +384,17 @@ function AdminDashboard() {
                 <TableCell>{TYPE_LABEL[v.type]}</TableCell>
                 <TableCell>{v.year}</TableCell>
                 <TableCell>{formatMoney(v.price, v.currency)}</TableCell>
+                <TableCell className="text-xs text-muted-foreground">
+                  {v.cost
+                    ? formatMargin(
+                        v.price,
+                        v.currency,
+                        v.cost,
+                        v.costCurrency ?? v.currency,
+                        settings.arsPerUsd,
+                      )
+                    : "—"}
+                </TableCell>
                 <TableCell>{money.format(v.km)} km</TableCell>
                 <TableCell>
                   <button
@@ -410,7 +434,7 @@ function AdminDashboard() {
             ))}
             {filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
+                <TableCell colSpan={8} className="py-10 text-center text-muted-foreground">
                   {vehicles.length === 0
                     ? "Todavía no cargaste ningún vehículo."
                     : "Ningún vehículo coincide con estos filtros."}

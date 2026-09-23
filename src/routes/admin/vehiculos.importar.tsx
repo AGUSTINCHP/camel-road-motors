@@ -87,6 +87,12 @@ function ImportarVehiculos() {
             <strong>en pausa (sin publicar)</strong> — entrá a cada uno después desde el stock para
             agregarle las fotos y publicarlo.
           </p>
+          <p className="text-sm text-muted-foreground">
+            La planilla tiene columnas separadas para <strong>precio</strong> (lo que ve el público)
+            y <strong>costo</strong> (lo que pagaste vos — nunca se muestra en el sitio). Cada una
+            tiene su propia columna de moneda, así que precio y costo pueden estar en pesos y
+            dólares indistintamente.
+          </p>
           <Button type="button" variant="outline" onClick={downloadTemplate}>
             <Download className="mr-1.5 h-4 w-4" /> Descargar planilla de ejemplo
           </Button>
@@ -126,6 +132,7 @@ function ImportarVehiculos() {
                       <th className="px-3 py-2">Modelo</th>
                       <th className="px-3 py-2">Año</th>
                       <th className="px-3 py-2">Precio</th>
+                      <th className="px-3 py-2">Costo</th>
                       <th className="px-3 py-2">Ubicación</th>
                     </tr>
                   </thead>
@@ -137,6 +144,9 @@ function ImportarVehiculos() {
                         <td className="px-3 py-2">{r.year}</td>
                         <td className="px-3 py-2">
                           {r.currency} {r.price}
+                        </td>
+                        <td className="px-3 py-2">
+                          {r.cost ? `${r.costCurrency} ${r.cost}` : "—"}
                         </td>
                         <td className="px-3 py-2">{r.location || "—"}</td>
                       </tr>
