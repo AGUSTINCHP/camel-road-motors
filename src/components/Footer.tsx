@@ -21,7 +21,7 @@ export function Footer() {
               target="_blank"
               rel="noreferrer"
               aria-label="Instagram"
-              className="border border-primary-foreground/25 p-3 transition hover:border-camel hover:text-camel"
+              className="border border-primary-foreground/25 p-3 text-primary-foreground/70 transition hover:border-primary-foreground hover:text-primary-foreground"
             >
               <Instagram className="h-4 w-4" />
             </a>
@@ -30,7 +30,7 @@ export function Footer() {
               target="_blank"
               rel="noreferrer"
               aria-label="Facebook"
-              className="border border-primary-foreground/25 p-3 transition hover:border-camel hover:text-camel"
+              className="border border-primary-foreground/25 p-3 text-primary-foreground/70 transition hover:border-primary-foreground hover:text-primary-foreground"
             >
               <Facebook className="h-4 w-4" />
             </a>
@@ -38,20 +38,20 @@ export function Footer() {
         </div>
 
         <div>
-          <p className="eyebrow text-camel">Navegación</p>
+          <p className="eyebrow text-primary-foreground/70">Navegación</p>
           <ul className="mt-5 space-y-3 text-sm text-primary-foreground/80">
             <li>
-              <Link to="/catalogo" className="hover:text-camel">
+              <Link to="/catalogo" className="hover:text-primary-foreground">
                 Catálogo
               </Link>
             </li>
             <li>
-              <Link to="/gestoria" className="hover:text-camel">
+              <Link to="/gestoria" className="hover:text-primary-foreground">
                 Gestoría automotor
               </Link>
             </li>
             <li>
-              <Link to="/seguros" className="hover:text-camel">
+              <Link to="/seguros" className="hover:text-primary-foreground">
                 Seguros
               </Link>
             </li>
@@ -59,7 +59,7 @@ export function Footer() {
         </div>
 
         <div>
-          <p className="eyebrow text-camel">Zonas de cobertura</p>
+          <p className="eyebrow text-primary-foreground/70">Zonas de cobertura</p>
           <ul className="mt-5 space-y-3 text-sm text-primary-foreground/80">
             {contact.zones.map((z) => (
               <li key={z.title}>{z.title}</li>
@@ -68,7 +68,7 @@ export function Footer() {
         </div>
 
         <div>
-          <p className="eyebrow text-camel">Contacto</p>
+          <p className="eyebrow text-primary-foreground/70">Contacto</p>
           <ul className="mt-5 space-y-3 text-sm text-primary-foreground/80">
             <li>
               <a
@@ -78,7 +78,7 @@ export function Footer() {
                 )}
                 target="_blank"
                 rel="noreferrer"
-                className="hover:text-camel"
+                className="hover:text-primary-foreground"
               >
                 {contact.whatsappDisplay}
               </a>

@@ -3,6 +3,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Check, ChevronLeft, ChevronRight, Expand, Heart, Landmark } from "lucide-react";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { NotifyForm } from "@/components/NotifyForm";
+import { Reveal } from "@/components/Reveal";
 import { TYPE_LABEL } from "@/data/vehicles";
 import { fetchVehicleBySlug } from "@/lib/vehicles.server";
 import { formatKm, formatMoney } from "@/lib/format";
@@ -123,7 +124,7 @@ function VehicleDetail() {
             ))}
           </div>
 
-          <div className="mt-10 border border-camel/40 bg-camel-soft/40 p-6">
+          <Reveal className="mt-10 border border-camel/40 bg-camel-soft/40 p-6">
             <p className="eyebrow text-camel">Vehículo verificado</p>
             <ul className="mt-4 grid gap-3 sm:grid-cols-2">
               {vehicle.highlights.map((h) => (
@@ -133,9 +134,9 @@ function VehicleDetail() {
                 </li>
               ))}
             </ul>
-          </div>
+          </Reveal>
 
-          <div className="mt-10">
+          <Reveal className="mt-10">
             <h2 className="text-2xl">Ficha técnica</h2>
             <dl className="mt-6 grid gap-x-10 sm:grid-cols-2">
               {specs.map(([k, val]) => (
@@ -148,7 +149,7 @@ function VehicleDetail() {
                 </div>
               ))}
             </dl>
-          </div>
+          </Reveal>
         </div>
 
         <div className="lg:sticky lg:top-28 lg:self-start">

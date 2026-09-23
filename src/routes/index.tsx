@@ -75,11 +75,11 @@ function Home() {
           alt="Salón de vehículos usados de Suzuki Motors"
           width={1920}
           height={1088}
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full animate-hero-zoom object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/60 to-ink/10" />
 
-        <div className="absolute right-5 top-28 hidden max-w-xs border border-border bg-background/95 p-6 shadow-xl backdrop-blur-sm lg:right-8 lg:block">
+        <div className="absolute right-5 top-28 hidden max-w-xs animate-in fade-in slide-in-from-right-6 border border-border bg-background/95 p-6 shadow-xl backdrop-blur-sm duration-700 lg:right-8 lg:block">
           <Quote className="h-6 w-6 text-camel" />
           <blockquote className="mt-4 text-sm leading-relaxed text-foreground">
             {heroQuote.text}
@@ -89,8 +89,8 @@ function Home() {
           </p>
         </div>
 
-        <div className="relative mx-auto w-full max-w-6xl px-5 pb-16 pt-32 text-primary-foreground lg:px-8">
-          <p className="eyebrow text-camel">{home.heroEyebrow}</p>
+        <div className="relative mx-auto w-full max-w-6xl animate-in fade-in slide-in-from-bottom-6 px-5 pb-16 pt-32 text-primary-foreground duration-700 lg:px-8">
+          <p className="eyebrow text-primary-foreground/70">{home.heroEyebrow}</p>
           <h1 className="mt-5 max-w-3xl font-display text-4xl leading-[1.05] sm:text-6xl lg:text-7xl">
             {home.heroTitle}
           </h1>

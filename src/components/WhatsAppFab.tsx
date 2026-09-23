@@ -10,7 +10,7 @@ export function WhatsAppFab() {
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Consultar por WhatsApp"
-        className="fixed bottom-5 right-5 z-[70] flex h-14 w-14 items-center justify-center rounded-full bg-camel text-accent-foreground shadow-xl transition hover:scale-105 hover:bg-ink"
+        className="fixed bottom-5 right-5 z-[70] flex h-14 w-14 items-center justify-center rounded-full border-2 border-background bg-camel text-accent-foreground shadow-xl transition hover:scale-105 hover:bg-ink"
       >
         <MessageCircle className="h-6 w-6" />
       </button>

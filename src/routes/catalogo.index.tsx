@@ -4,6 +4,7 @@ import { SlidersHorizontal, X } from "lucide-react";
 import { FilterPanel, type Filters } from "@/components/FilterPanel";
 import { VehicleCard } from "@/components/VehicleCard";
 import { NotifyForm } from "@/components/NotifyForm";
+import { Reveal } from "@/components/Reveal";
 import { TYPE_LABEL, type VehicleType } from "@/data/vehicles";
 import { fetchPublishedVehicles } from "@/lib/vehicles.server";
 import { fetchSiteContent } from "@/lib/site-content.server";
@@ -226,8 +227,10 @@ function Catalogo() {
 
           {results.length > 0 ? (
             <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-              {results.map((v) => (
-                <VehicleCard key={v.id} vehicle={v} />
+              {results.map((v, i) => (
+                <Reveal key={v.id} delay={(i % 6) * 60}>
+                  <VehicleCard vehicle={v} />
+                </Reveal>
               ))}
             </div>
           ) : (

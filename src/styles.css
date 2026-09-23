@@ -150,3 +150,20 @@
     cursor: pointer;
   }
 }
+
+@keyframes hero-zoom {
+  from {
+    transform: scale(1.08);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@utility animate-hero-zoom {
+  animation: hero-zoom 6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
