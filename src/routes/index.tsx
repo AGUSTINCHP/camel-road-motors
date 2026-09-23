@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, BadgeCheck, FileText, ShieldCheck } from "lucide-react";
+import { ArrowRight, BadgeCheck, FileText, Quote, ShieldCheck } from "lucide-react";
 import heroImg from "@/assets/hero.jpg";
 import { VehicleCard } from "@/components/VehicleCard";
 import { BrandsGrid } from "@/components/BrandsGrid";
@@ -9,6 +9,7 @@ import { TradeInForm } from "@/components/TradeInForm";
 import { fetchPublishedVehicles } from "@/lib/vehicles.server";
 import { useSiteContent } from "@/lib/site-content-context";
 import { TYPE_LABEL, type VehicleType } from "@/data/vehicles";
+import { testimonios } from "@/data/testimonials";
 
 const QUICK_TYPES: VehicleType[] = ["auto", "camioneta", "moto", "cuatriciclo", "lancha"];
 
@@ -51,12 +52,19 @@ const PILLAR_META = [
 
 function Home() {
   const { vehicles, featuredVehicles, newestVehicles } = Route.useLoaderData();
-  const { home } = useSiteContent();
+  const { home, contact } = useSiteContent();
   const typeCounts = vehicles.reduce<Partial<Record<VehicleType, number>>>((acc, v) => {
     acc[v.type] = (acc[v.type] ?? 0) + 1;
     return acc;
   }, {});
   const availableTypes = QUICK_TYPES.filter((t) => (typeCounts[t] ?? 0) > 0);
+  const brandCount = new Set(vehicles.map((v) => v.brand)).size;
+  const heroQuote = testimonios[0]!;
+  const stats: [string, string][] = [
+    [String(vehicles.length), "Vehículos en stock"],
+    [String(brandCount), "Marcas disponibles"],
+    [String(contact.zones.length), "Zonas de cobertura"],
+  ];
   return (
     <>
       <section className="relative flex min-h-[86vh] items-end overflow-hidden">
@@ -68,6 +76,17 @@ function Home() {
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/60 to-ink/10" />
+
+        <div className="absolute right-5 top-28 hidden max-w-xs border border-border bg-background/95 p-6 shadow-xl backdrop-blur-sm lg:right-8 lg:block">
+          <Quote className="h-6 w-6 text-camel" />
+          <blockquote className="mt-4 text-sm leading-relaxed text-foreground">
+            {heroQuote.text}
+          </blockquote>
+          <p className="mt-4 text-xs text-muted-foreground">
+            {heroQuote.name} · {heroQuote.place}
+          </p>
+        </div>
+
         <div className="relative mx-auto w-full max-w-6xl px-5 pb-16 pt-32 text-primary-foreground lg:px-8">
           <p className="eyebrow text-camel">{home.heroEyebrow}</p>
           <h1 className="mt-5 max-w-3xl font-display text-4xl leading-[1.05] sm:text-6xl lg:text-7xl">
@@ -99,6 +118,17 @@ function Home() {
               ))}
             </div>
           ) : null}
+
+          <div className="mt-12 grid max-w-lg grid-cols-3 gap-6 border-t border-primary-foreground/20 pt-8">
+            {stats.map(([value, label]) => (
+              <div key={label}>
+                <p className="font-display text-3xl text-camel sm:text-4xl">{value}</p>
+                <p className="mt-1 text-[0.7rem] uppercase tracking-[0.1em] text-primary-foreground/70">
+                  {label}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
