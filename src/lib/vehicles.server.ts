@@ -109,3 +109,52 @@ export const adminDeleteVehicle = createServerFn({ method: "POST" })
     await deleteVehicle(id);
     return { ok: true };
   });
+
+// ---------- Carga masiva por planilla ----------
+// Los vehículos importados por CSV nunca traen fotos (una planilla no puede
+// llevar archivos), así que se crean siempre como borrador (sin publicar)
+// para que no aparezcan en el catálogo hasta que alguien les suba fotos.
+
+const bulkRowSchema = z.object({
+  type: z.enum(["auto", "camioneta", "moto", "cuatriciclo", "lancha"]),
+  brand: z.string().min(1),
+  model: z.string().min(1),
+  version: z.string().min(1),
+  year: z.coerce.number().int().min(1970).max(2100),
+  price: z.coerce.number().min(0),
+  currency: z.enum(["USD", "ARS"]),
+  km: z.coerce.number().min(0),
+  fuel: z.string().min(1),
+  transmission: z.string().min(1),
+  engine: z.string().min(1),
+  color: z.string().min(1),
+  location: z.string().min(1),
+  doors: z.coerce.number().optional(),
+  highlights: z.array(z.string()),
+  featured: z.boolean(),
+});
+
+export const adminBulkImportVehicles = createServerFn({ method: "POST" })
+  .inputValidator((rows: unknown[]) => rows)
+  .handler(async ({ data: rows }) => {
+    await requireAdmin();
+    let created = 0;
+    const errors: { row: number; message: string }[] = [];
+    for (let i = 0; i < rows.length; i++) {
+      const parsed = bulkRowSchema.safeParse(rows[i]);
+      if (!parsed.success) {
+        errors.push({ row: i + 1, message: parsed.error.issues[0]?.message ?? "Fila inválida" });
+        continue;
+      }
+      try {
+        await createVehicle({ ...parsed.data, images: [], published: false });
+        created++;
+      } catch (err) {
+        errors.push({
+          row: i + 1,
+          message: err instanceof Error ? err.message : "No se pudo crear",
+        });
+      }
+    }
+    return { created, errors };
+  });

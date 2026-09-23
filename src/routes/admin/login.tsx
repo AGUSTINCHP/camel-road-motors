@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { fetchAdminSession, loginAdminFn } from "@/lib/vehicles.server";
+import { ADMIN_HEAD } from "@/lib/admin-head";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +13,7 @@ export const Route = createFileRoute("/admin/login")({
       throw redirect({ to: "/admin" });
     }
   },
+  head: () => ADMIN_HEAD,
   component: AdminLogin,
 });
 

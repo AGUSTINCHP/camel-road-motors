@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, Loader2, Star, Upload, X } from "lucide-react";
 import type { StoredVehicle } from "@/lib/vehicle-store.server";
 import type { Currency, VehicleType } from "@/data/vehicles";
 import { uploadVehiclePhoto } from "@/lib/upload.server";
+import { compressImage } from "@/lib/image-compress";
 import { useSiteContent } from "@/lib/site-content-context";
 import { RetryImage } from "@/components/admin/RetryImage";
 import { ComboboxField } from "@/components/admin/ComboboxField";
@@ -153,6 +154,10 @@ export function VehicleForm({
   );
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ done: number; total: number } | null>(
+    null,
+  );
+  const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -184,23 +189,28 @@ export function VehicleForm({
     [suggestionSource],
   );
 
-  async function handleFiles(files: FileList | null) {
-    if (!files || files.length === 0) return;
+  async function handleFiles(files: FileList | File[] | null) {
+    const list = files ? Array.from(files).filter((f) => f.type.startsWith("image/")) : [];
+    if (list.length === 0) return;
     setUploading(true);
+    setUploadProgress({ done: 0, total: list.length });
     setError("");
     try {
       const uploaded: string[] = [];
-      for (const file of Array.from(files)) {
+      for (const original of list) {
+        const file = await compressImage(original);
         const formData = new FormData();
         formData.append("file", file);
         const result = await uploadVehiclePhoto({ data: formData });
         uploaded.push(result.url);
+        setUploadProgress((p) => (p ? { ...p, done: p.done + 1 } : p));
       }
       set("images", [...values.images, ...uploaded]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo subir la foto.");
     } finally {
       setUploading(false);
+      setUploadProgress(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   }
@@ -385,7 +395,22 @@ export function VehicleForm({
 
       <section className="space-y-4">
         <h2 className="text-lg font-semibold">Fotos</h2>
-        <div className="flex flex-wrap gap-3">
+        <div
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragOver(true);
+          }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragOver(false);
+            handleFiles(e.dataTransfer.files);
+          }}
+          className={
+            "flex flex-wrap gap-3 rounded-sm border border-dashed p-3 transition " +
+            (dragOver ? "border-camel bg-camel-soft/40" : "border-transparent")
+          }
+        >
           {values.images.map((url, index) => (
             <div key={url} className="group relative h-24 w-24 overflow-hidden border border-border">
               <RetryImage src={url} alt="" className="h-full w-full object-cover" />
@@ -402,7 +427,7 @@ export function VehicleForm({
               >
                 <X className="h-3 w-3" />
               </button>
-              <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-ink/70 px-1 py-1 opacity-0 transition group-hover:opacity-100">
+              <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-ink/70 px-1 py-1">
                 <button
                   type="button"
                   onClick={() => moveImage(index, -1)}
@@ -431,29 +456,33 @@ export function VehicleForm({
             className="flex h-24 w-24 flex-col items-center justify-center gap-1 border border-dashed border-border text-muted-foreground hover:border-camel"
           >
             {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Upload className="h-5 w-5" />}
-            <span className="text-[10px] uppercase tracking-wide">
-              {uploading ? "Subiendo…" : "Agregar"}
+            <span className="text-center text-[10px] uppercase tracking-wide">
+              {uploading
+                ? `Subiendo ${uploadProgress?.done ?? 0}/${uploadProgress?.total ?? 0}…`
+                : "Agregar"}
             </span>
           </button>
         </div>
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/jpeg,image/png,image/webp"
+          accept="image/*"
           multiple
           className="hidden"
           onChange={(e) => handleFiles(e.target.files)}
         />
         <p className="text-xs text-muted-foreground">
-          Podés seleccionar varias fotos a la vez. Pasá el mouse sobre una foto para reordenarla
+          Podés seleccionar varias fotos a la vez (o sacarlas directo con la cámara del celular), o
+          arrastrarlas y soltarlas acá desde la computadora. Se comprimen solas antes de subir, así
+          que no hace falta editarlas antes. Tocá o pasá el mouse sobre una foto para reordenarla
           (las flechas) o para quitarla (la X) — la primera de la lista es la portada, la que se
           ve en el catálogo y en las tarjetas.
         </p>
         <p className="text-xs text-muted-foreground">
-          <strong>Formato recomendado:</strong> fotos horizontales (apaisadas, no verticales),
-          en JPG o WEBP, de al menos 1200×900px. Con buena luz natural, el vehículo completo y
-          centrado en el cuadro. Ideal que pesen entre 300KB y 2MB cada una — aceptamos hasta
-          8MB, pero fotos más livianas cargan más rápido en el celular del cliente.
+          <strong>Formato recomendado:</strong> fotos horizontales (apaisadas, no verticales), con
+          buena luz natural y el vehículo completo y centrado en el cuadro. El peso y el tamaño no
+          hay que pensarlos — cualquier foto que subas (incluidas las HEIC de iPhone) se
+          redimensiona y comprime sola antes de guardarse.
         </p>
       </section>
 

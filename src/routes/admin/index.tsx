@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, redirect, useRouter, Link } from "@tanstack/react-router";
-import { Plus, Pencil, Trash2, LogOut, Eye, EyeOff, FileText } from "lucide-react";
+import { Plus, Pencil, Trash2, LogOut, Eye, EyeOff, FileText, Upload } from "lucide-react";
 import {
   adminDeleteVehicle,
   adminListVehicles,
@@ -12,6 +12,7 @@ import { TYPE_LABEL, type VehicleType } from "@/data/vehicles";
 import { formatMoney, formatPrice } from "@/lib/format";
 import { toUsdEquivalent } from "@/lib/currency";
 import { useSiteContent } from "@/lib/site-content-context";
+import { ADMIN_HEAD } from "@/lib/admin-head";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -35,6 +36,7 @@ export const Route = createFileRoute("/admin/")({
     if (!session.isAdmin) throw redirect({ to: "/admin/login" });
   },
   loader: async () => adminListVehicles(),
+  head: () => ADMIN_HEAD,
   component: AdminDashboard,
 });
 
@@ -160,6 +162,11 @@ function AdminDashboard() {
               <FileText className="mr-1.5 h-4 w-4" /> Contenido del sitio
             </Button>
           </Link>
+          <Link to="/admin/vehiculos/importar">
+            <Button variant="outline">
+              <Upload className="mr-1.5 h-4 w-4" /> Importar planilla
+            </Button>
+          </Link>
           <Link to="/admin/vehiculos/nuevo">
             <Button>
               <Plus className="mr-1.5 h-4 w-4" /> Cargar vehículo
@@ -279,7 +286,70 @@ function AdminDashboard() {
         ) : null}
       </div>
 
-      <div className="overflow-x-auto p-6">
+      <div className="space-y-3 p-6 md:hidden">
+        {filtered.map((v) => (
+          <div
+            key={v.id}
+            className={
+              "border border-border bg-background p-4" + (busyId === v.id ? " opacity-50" : "")
+            }
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="font-medium">
+                  {v.brand} {v.model}
+                </p>
+                <p className="truncate text-sm text-muted-foreground">{v.version}</p>
+              </div>
+              <div className="flex shrink-0 gap-2">
+                <Link to="/admin/vehiculos/$id" params={{ id: v.id }}>
+                  <Button variant="outline" size="icon" aria-label="Editar">
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                </Link>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  aria-label="Eliminar"
+                  onClick={() => handleDelete(v.id, `${v.brand} ${v.model}`)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {TYPE_LABEL[v.type]} · {v.year} · {money.format(v.km)} km
+            </p>
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <p className="font-display text-lg">{formatMoney(v.price, v.currency)}</p>
+              <button
+                type="button"
+                onClick={() => togglePublished(v.id, v.published)}
+                className="flex items-center gap-1.5 text-xs uppercase tracking-wide"
+              >
+                {v.published ? (
+                  <>
+                    <Eye className="h-3.5 w-3.5 text-camel" /> Publicado
+                  </>
+                ) : (
+                  <>
+                    <EyeOff className="h-3.5 w-3.5 text-muted-foreground" /> Pausado
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        ))}
+        {filtered.length === 0 ? (
+          <p className="py-10 text-center text-muted-foreground">
+            {vehicles.length === 0
+              ? "Todavía no cargaste ningún vehículo."
+              : "Ningún vehículo coincide con estos filtros."}
+          </p>
+        ) : null}
+      </div>
+
+      <div className="hidden overflow-x-auto p-6 md:block">
         <Table>
           <TableHeader>
             <TableRow>

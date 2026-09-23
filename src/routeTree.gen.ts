@@ -18,6 +18,7 @@ import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as CatalogoIndexRouteImport } from './routes/catalogo.index'
 import { Route as CatalogoSlugRouteImport } from './routes/catalogo.$slug'
 import { Route as AdminVehiculosIdRouteImport } from './routes/admin/vehiculos.$id'
+import { Route as AdminVehiculosImportarRouteImport } from './routes/admin/vehiculos.importar'
 import { Route as AdminVehiculosNuevoRouteImport } from './routes/admin/vehiculos.nuevo'
 
 const IndexRoute = IndexRouteImport.update({
@@ -65,6 +66,11 @@ const AdminVehiculosIdRoute = AdminVehiculosIdRouteImport.update({
   path: '/admin/vehiculos/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminVehiculosImportarRoute = AdminVehiculosImportarRouteImport.update({
+  id: '/admin/vehiculos/importar',
+  path: '/admin/vehiculos/importar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminVehiculosNuevoRoute = AdminVehiculosNuevoRouteImport.update({
   id: '/admin/vehiculos/nuevo',
   path: '/admin/vehiculos/nuevo',
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/catalogo/': typeof CatalogoIndexRoute
   '/admin/vehiculos/$id': typeof AdminVehiculosIdRoute
+  '/admin/vehiculos/importar': typeof AdminVehiculosImportarRoute
   '/admin/vehiculos/nuevo': typeof AdminVehiculosNuevoRoute
 }
 export interface FileRoutesByTo {
@@ -93,6 +100,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/catalogo': typeof CatalogoIndexRoute
   '/admin/vehiculos/$id': typeof AdminVehiculosIdRoute
+  '/admin/vehiculos/importar': typeof AdminVehiculosImportarRoute
   '/admin/vehiculos/nuevo': typeof AdminVehiculosNuevoRoute
 }
 export interface FileRoutesById {
@@ -106,6 +114,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/catalogo/': typeof CatalogoIndexRoute
   '/admin/vehiculos/$id': typeof AdminVehiculosIdRoute
+  '/admin/vehiculos/importar': typeof AdminVehiculosImportarRoute
   '/admin/vehiculos/nuevo': typeof AdminVehiculosNuevoRoute
 }
 export interface FileRouteTypes {
@@ -120,6 +129,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/catalogo/'
     | '/admin/vehiculos/$id'
+    | '/admin/vehiculos/importar'
     | '/admin/vehiculos/nuevo'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -132,6 +142,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/catalogo'
     | '/admin/vehiculos/$id'
+    | '/admin/vehiculos/importar'
     | '/admin/vehiculos/nuevo'
   id:
     | '__root__'
@@ -144,6 +155,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/catalogo/'
     | '/admin/vehiculos/$id'
+    | '/admin/vehiculos/importar'
     | '/admin/vehiculos/nuevo'
   fileRoutesById: FileRoutesById
 }
@@ -157,6 +169,7 @@ export interface RootRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
   CatalogoIndexRoute: typeof CatalogoIndexRoute
   AdminVehiculosIdRoute: typeof AdminVehiculosIdRoute
+  AdminVehiculosImportarRoute: typeof AdminVehiculosImportarRoute
   AdminVehiculosNuevoRoute: typeof AdminVehiculosNuevoRoute
 }
 
@@ -225,6 +238,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminVehiculosIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/vehiculos/importar': {
+      id: '/admin/vehiculos/importar'
+      path: '/admin/vehiculos/importar'
+      fullPath: '/admin/vehiculos/importar'
+      preLoaderRoute: typeof AdminVehiculosImportarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/vehiculos/nuevo': {
       id: '/admin/vehiculos/nuevo'
       path: '/admin/vehiculos/nuevo'
@@ -245,6 +265,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
   CatalogoIndexRoute: CatalogoIndexRoute,
   AdminVehiculosIdRoute: AdminVehiculosIdRoute,
+  AdminVehiculosImportarRoute: AdminVehiculosImportarRoute,
   AdminVehiculosNuevoRoute: AdminVehiculosNuevoRoute,
 }
 export const routeTree = rootRouteImport
