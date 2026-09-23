@@ -11,7 +11,7 @@ export function Footer() {
     <footer className="mt-24 bg-ink text-primary-foreground">
       <div className="mx-auto grid max-w-6xl gap-12 px-5 py-16 sm:grid-cols-2 lg:grid-cols-4 lg:px-8">
         <div>
-          <Wordmark />
+          <Wordmark inverted className="h-14" />
           <p className="mt-6 max-w-xs text-sm text-primary-foreground/70">
             Compra y venta de vehículos usados con verificación real, gestoría automotor y seguros.
           </p>

@@ -1,34 +1,31 @@
 import { cn } from "@/lib/utils";
+import logoMark from "@/assets/logo-mark.png";
+import logoMarkWhite from "@/assets/logo-mark-white.png";
+import logoFull from "@/assets/logo-full.png";
+import logoFullWhite from "@/assets/logo-full-white.png";
 
 export function Wordmark({
   className,
   tagline = true,
+  inverted = false,
 }: {
   className?: string;
   tagline?: boolean;
+  inverted?: boolean;
 }) {
+  const src = tagline
+    ? inverted
+      ? logoFullWhite
+      : logoFull
+    : inverted
+      ? logoMarkWhite
+      : logoMark;
+
   return (
-    <span className={cn("inline-flex flex-col leading-none", className)}>
-      <span className="relative inline-block font-display text-[1.35rem] font-semibold tracking-[0.34em] sm:text-2xl">
-        <span
-          aria-hidden
-          className="absolute inset-0 translate-y-[2px] text-transparent opacity-40"
-          style={{ WebkitTextStroke: "1px currentColor" }}
-        >
-          SUZUKI
-        </span>
-        <span
-          aria-hidden
-          className="absolute inset-0 translate-y-[4px] text-transparent opacity-20"
-          style={{ WebkitTextStroke: "1px currentColor" }}
-        >
-          SUZUKI
-        </span>
-        <span className="relative">SUZUKI</span>
-      </span>
-      {tagline ? (
-        <span className="eyebrow mt-2 text-[0.55rem] tracking-[0.42em] opacity-60">Motors</span>
-      ) : null}
-    </span>
+    <img
+      src={src}
+      alt="Suzuki Motors — compra venta de vehículos usados"
+      className={cn("h-8 w-auto object-contain", className)}
+    />
   );
 }

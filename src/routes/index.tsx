@@ -6,6 +6,8 @@ import { BrandsGrid } from "@/components/BrandsGrid";
 import { Testimonials } from "@/components/Testimonials";
 import { CoverageZones } from "@/components/CoverageZones";
 import { TradeInForm } from "@/components/TradeInForm";
+import { Reveal } from "@/components/Reveal";
+import { AnimatedStat } from "@/components/AnimatedStat";
 import { fetchPublishedVehicles } from "@/lib/vehicles.server";
 import { useSiteContent } from "@/lib/site-content-context";
 import { TYPE_LABEL, type VehicleType } from "@/data/vehicles";
@@ -60,10 +62,10 @@ function Home() {
   const availableTypes = QUICK_TYPES.filter((t) => (typeCounts[t] ?? 0) > 0);
   const brandCount = new Set(vehicles.map((v) => v.brand)).size;
   const heroQuote = testimonios[0]!;
-  const stats: [string, string][] = [
-    [String(vehicles.length), "Vehículos en stock"],
-    [String(brandCount), "Marcas disponibles"],
-    [String(contact.zones.length), "Zonas de cobertura"],
+  const stats: [number, string][] = [
+    [vehicles.length, "Vehículos en stock"],
+    [brandCount, "Marcas disponibles"],
+    [contact.zones.length, "Zonas de cobertura"],
   ];
   return (
     <>
@@ -121,12 +123,7 @@ function Home() {
 
           <div className="mt-12 grid max-w-lg grid-cols-3 gap-6 border-t border-primary-foreground/20 pt-8">
             {stats.map(([value, label]) => (
-              <div key={label}>
-                <p className="font-display text-3xl text-camel sm:text-4xl">{value}</p>
-                <p className="mt-1 text-[0.7rem] uppercase tracking-[0.1em] text-primary-foreground/70">
-                  {label}
-                </p>
-              </div>
+              <AnimatedStat key={label} value={value} label={label} />
             ))}
           </div>
         </div>
@@ -137,7 +134,7 @@ function Home() {
           {home.pillars.map((p, i) => {
             const meta = PILLAR_META[i]!;
             return (
-              <div key={p.title}>
+              <Reveal key={p.title} delay={i * 100}>
                 <meta.icon className="h-6 w-6 text-camel" />
                 <h3 className="mt-4 text-xl">{p.title}</h3>
                 <p className="mt-2 text-sm text-muted-foreground">{p.text}</p>
@@ -149,52 +146,66 @@ function Home() {
                     Conocer más
                   </Link>
                 ) : null}
-              </div>
+              </Reveal>
             );
           })}
         </div>
       </section>
 
-      <Section
-        eyebrow="Selección de la casa"
-        title="Destacados"
-        action={{ label: "Ver todo el catálogo", to: "/catalogo" }}
-      >
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {featuredVehicles.map((v) => (
-            <VehicleCard key={v.id} vehicle={v} />
-          ))}
-        </div>
-      </Section>
-
-      <Section eyebrow="Ingresos de la semana" title="Recién llegados">
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {newestVehicles.map((v) => (
-            <VehicleCard key={v.id} vehicle={v} />
-          ))}
-        </div>
-      </Section>
-
-      <BrandsGrid vehicles={vehicles} />
-
-      <Testimonials />
-
-      <CoverageZones />
-
-      <TradeInForm />
-
-      <section className="mx-auto max-w-6xl px-5 py-20 lg:px-8">
-        <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
-          <div>
-            <p className="eyebrow text-camel">Sobre nosotros</p>
-            <h2 className="mt-3 text-3xl sm:text-4xl">{home.aboutTitle}</h2>
+      <Reveal>
+        <Section
+          eyebrow="Selección de la casa"
+          title="Destacados"
+          action={{ label: "Ver todo el catálogo", to: "/catalogo" }}
+        >
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {featuredVehicles.map((v) => (
+              <VehicleCard key={v.id} vehicle={v} />
+            ))}
           </div>
-          <div
-            className="prose-suzuki space-y-4 text-muted-foreground"
-            dangerouslySetInnerHTML={{ __html: home.aboutText }}
-          />
-        </div>
-      </section>
+        </Section>
+      </Reveal>
+
+      <Reveal>
+        <Section eyebrow="Ingresos de la semana" title="Recién llegados">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {newestVehicles.map((v) => (
+              <VehicleCard key={v.id} vehicle={v} />
+            ))}
+          </div>
+        </Section>
+      </Reveal>
+
+      <Reveal>
+        <BrandsGrid vehicles={vehicles} />
+      </Reveal>
+
+      <Reveal>
+        <Testimonials />
+      </Reveal>
+
+      <Reveal>
+        <CoverageZones />
+      </Reveal>
+
+      <Reveal>
+        <TradeInForm />
+      </Reveal>
+
+      <Reveal>
+        <section className="mx-auto max-w-6xl px-5 py-20 lg:px-8">
+          <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
+            <div>
+              <p className="eyebrow text-camel">Sobre nosotros</p>
+              <h2 className="mt-3 text-3xl sm:text-4xl">{home.aboutTitle}</h2>
+            </div>
+            <div
+              className="prose-suzuki space-y-4 text-muted-foreground"
+              dangerouslySetInnerHTML={{ __html: home.aboutText }}
+            />
+          </div>
+        </section>
+      </Reveal>
     </>
   );
 }

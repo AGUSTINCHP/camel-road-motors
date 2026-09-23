@@ -17,7 +17,7 @@ export function Header() {
     <header className="sticky top-0 z-[60] border-b border-border/70 bg-background/90 backdrop-blur">
       <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-5 py-4 lg:px-8">
         <Link to="/" className="min-w-0" onClick={() => setOpen(false)}>
-          <Wordmark tagline={false} />
+          <Wordmark tagline={false} className="h-7 sm:h-8" />
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
